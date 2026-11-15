@@ -353,5 +353,58 @@
     "notes": "",
     "last_cooked": "",
     "added_at": "2026-11-15T14:46:38+00:00"
+  },
+  {
+    "id": "vegane-bananen-pancakes-mit-blaubeersoss-34a78",
+    "title": "Vegane Bananen-Pancakes mit Blaubeersoße",
+    "source_url": "https://www.zuckerjagdwurst.com/de/rezepte/vegane-bananen-pancakes-mit-blaubeersosse",
+    "image": "images/vegane-bananen-pancakes-mit-blaubeersoss-34a78.jpg",
+    "servings": 8,
+    "prep_time": 0,
+    "cook_time": 30,
+    "difficulty": "",
+    "rating": 0,
+    "tags": [
+      "Vegane Rezepte mit Beeren",
+      "Vegane Brunch-Rezepte",
+      "Vegane Frühstücksrezepte",
+      "Vegane Pancakes",
+      "Vegane 30-Minuten-Rezepte"
+    ],
+    "ingredients": [
+      "Für die Bananen-Pancakes:",
+      "1 Banane (am besten schon ein paar Tage alt oder leicht braun)",
+      "100 g Mehl",
+      "1 TL Backpulver",
+      "30 g Zucker",
+      "1 Prise Salz",
+      "100 ml pflanzliche Milch",
+      "Pflanzenöl zum Braten (z. B. Sonnenblumen- oder Rapsöl)",
+      "gehackte Haselnüsse zum Servieren",
+      "Für die Blaubeersoße:",
+      "150 g Blaubeeren",
+      "10 g Speisestärke",
+      "80 ml Wasser",
+      "15 g Zucker"
+    ],
+    "steps": [
+      "Blaubeersoße:",
+      "Blaubeeren waschen und in einen kleinen Topf geben. Speisestärke mit Wasser glatt rühren und die Mischung zusammen mit dem Zucker ebenfalls in den Topf geben.",
+      "Die Mischung einmal aufkochen lassen und ca. 5 Minuten köcheln lassen, bis sie nach und nach andickt. Die Blaubeeren dabei leicht mit einer Gabel oder einem Kochlöffel zerdrücken.",
+      "Die Blaubeersoße nach Wunsch pürieren und beiseitestellen, bis die Pancakes fertig sind. Nach Wunsch kurz vor dem Servieren noch mal erwärmen.",
+      "Bananen-Pancakes:",
+      "Banane schälen, in eine Schüssel geben und mit einer Gabel zerdrücken, bis ein Mus entsteht.",
+      "Mehl, Backpulver, Zucker und Salz in einer Schüssel vermischen. Pflanzliche Milch und das Bananenmus hinzugeben und zu einem dickflüssigen Teig vermengen. Den Teig ca. 10 Minuten ruhen lassen.",
+      "Etwas Pflanzenöl in einer beschichteten Pfanne bei mittlerer Hitze erwärmen und die Pancakes darin nacheinander ausbacken. Sobald sich kleine Blasen bilden, die Pancakes wenden, sodass sie von beiden Seiten goldbraun sind. Die Pancakes mit Blaubeersoße und gehackten Haselnüssen servieren."
+    ],
+    "nutrition": {
+      "calories": null,
+      "protein": null,
+      "fat": null,
+      "carbs": null
+    },
+    "notes": "",
+    "last_cooked": "",
+    "added_at": "2026-11-15T14:48:07+00:00"
   }
 ]
