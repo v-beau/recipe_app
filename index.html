@@ -220,6 +220,23 @@ table.nut thead th { font-size: 13px; color: var(--muted); font-weight: 600; }
 .shop-list li .src { display: block; font-size: 13px; color: var(--muted); text-decoration: none; }
 .shop-list li .del { background: none; border: 0; color: var(--muted); font-size: 22px; width: 40px; height: 40px; cursor: pointer; flex: none; }
 
+.list-head { display: flex; align-items: center; gap: 12px; margin: 6px 0 2px; }
+.list-head h2 { flex: 1; font-size: 22px; font-weight: 800; }
+.cat-h {
+  position: sticky; top: calc(57px + env(safe-area-inset-top)); z-index: 4; background: var(--bg);
+  display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 750; margin: 0; padding: 18px 4px 8px;
+}
+.cat-h span { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--muted); background: var(--card-2); border-radius: 10px; padding: 1px 9px; }
+.shop-list li .mini { background: var(--card-2); border: 0; border-radius: 10px; width: 40px; height: 40px; font-size: 18px; cursor: pointer; flex: none; }
+.opt { display: block; width: 100%; text-align: left; min-height: 54px; padding: 12px 6px; background: none; border: 0; border-bottom: 1px solid var(--border); font-size: 17px; cursor: pointer; }
+.opt:last-child { border-bottom: 0; }
+.opt.on { color: var(--accent); font-weight: 700; }
+.opt.danger { color: var(--danger); }
+.order-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.order-row span { flex: 1; }
+.order-row .icon-btn { width: 44px; height: 44px; font-size: 18px; }
+.order-row .icon-btn:disabled { opacity: .3; }
+
 /* Dialog */
 dialog { border: 0; border-radius: 20px; padding: 0; width: min(560px, calc(100vw - 24px)); max-height: 85vh; background: var(--card); color: var(--text); box-shadow: 0 20px 60px rgba(0,0,0,.35); }
 dialog::backdrop { background: rgba(0,0,0,.45); }
@@ -257,16 +274,22 @@ dialog .dlg-foot .btn { flex: 1; }
 <nav class="bottom" aria-label="Hauptmenü">
   <div class="wrap">
     <a href="#/" data-nav="list"><span class="ico">📖</span>Rezepte</a>
-    <a href="#/shop" data-nav="shop"><span class="ico">🛒</span>Einkauf<span class="badge" id="shopBadge" hidden></span></a>
+    <a href="#/shop" data-nav="shop"><span class="ico">🛒</span>Einkaufen<span class="badge" id="shopBadge" hidden></span></a>
     <a href="#/new" data-nav="new"><span class="ico">➕</span>Neu</a>
     <a href="#/more" data-nav="more"><span class="ico">⚙️</span>Mehr</a>
   </div>
 </nav>
 
 <dialog id="pickDlg">
-  <div class="dlg-head"><h2 style="font-size:19px">Rezepte für die Einkaufsliste</h2><button class="icon-btn" data-close aria-label="Schließen">✕</button></div>
+  <div class="dlg-head"><h2 style="font-size:19px" id="pickTitle">Rezepte für die Einkaufsliste</h2><button class="icon-btn" data-close aria-label="Schließen">✕</button></div>
   <div class="dlg-body" id="pickList"></div>
   <div class="dlg-foot"><button class="btn" data-close>Abbrechen</button><button class="btn primary" id="pickOk">Zutaten hinzufügen</button></div>
+</dialog>
+
+<dialog id="genDlg">
+  <div class="dlg-head"><h2 style="font-size:19px" id="genTitle"></h2><button class="icon-btn" data-close aria-label="Schließen">✕</button></div>
+  <div class="dlg-body" id="genBody"></div>
+  <div class="dlg-foot" id="genFoot" hidden></div>
 </dialog>
 
 <div id="toast" role="status"></div>
@@ -424,7 +447,7 @@ const Store = {
 const state = {
   remote: [], remoteOk: true,
   local: { recipes: {}, deleted: [] },   // Änderungen auf diesem Gerät
-  shop: [],
+  lists: [], activeList: '',
   settings: { repo: '' },
   recipes: [],
   filter: { q: '', tags: new Set(), sort: 'new' },
@@ -480,11 +503,6 @@ async function deleteRecipe(id) {
   delete state.local.recipes[id];
   if (remoteIds().has(id) && !state.local.deleted.includes(id)) state.local.deleted.push(id);
   await saveLocal(); rebuild();
-}
-async function saveShop() { await Store.set('shop', state.shop); updateShopBadge(); }
-function updateShopBadge() {
-  const n = state.shop.filter(i => !i.done).length, b = $('#shopBadge');
-  b.hidden = !n; b.textContent = n;
 }
 
 /* GitHub-Repository herausfinden (für "Per Link importieren") */
@@ -700,7 +718,12 @@ function renderDetail(app, id) {
     toast(r.rating ? `Bewertung: ${r.rating} von 5 Sternen` : 'Bewertung entfernt');
   };
   $('#cooked').onclick = async () => { r.last_cooked = todayISO(); await saveRecipe(r); renderDetail(app, id); toast('Als heute gekocht gespeichert 👩‍🍳'); };
-  $('#toShop').onclick = async () => { addToShop(r, state.servings[id] || base); await saveShop(); { const c = state.servings[id] || base; toast(`Zutaten für ${c} ${c === 1 ? 'Portion' : 'Portionen'} hinzugefügt 🛒`); }; };
+  $('#toShop').onclick = async () => {
+    const L = await chooseList(); if (!L) return;
+    const c = state.servings[id] || base;
+    addToShop(L, r, c); state.activeList = L.id; await saveShop();
+    toast(`Zutaten für ${c} ${c === 1 ? 'Portion' : 'Portionen'} auf „${L.name}“ 🛒`);
+  };
   $('#del').onclick = async () => {
     if (!confirm(`„${r.title}“ wirklich löschen?`)) return;
     await deleteRecipe(id); toast('Rezept gelöscht'); location.hash = '#/';
@@ -721,75 +744,252 @@ function renderDetail(app, id) {
 }
 
 /* =========================================================
-   Einkaufsliste
+   Einkaufslisten (mehrere Listen, nach Abteilungen sortiert)
    ========================================================= */
-function addToShop(r, servings) {
+const CATS = [
+  { id: 'gemuese', label: 'Obst & Gemüse', icon: '🥬' },
+  { id: 'brot', label: 'Brot & Backwaren', icon: '🥖' },
+  { id: 'fleisch', label: 'Fleisch & Fisch', icon: '🥩' },
+  { id: 'milch', label: 'Milchprodukte, Eier & Kühlregal', icon: '🧀' },
+  { id: 'teigwaren', label: 'Teigwaren, Reis & Hülsenfrüchte', icon: '🍝' },
+  { id: 'konserven', label: 'Konserven & Fertiges', icon: '🥫' },
+  { id: 'gewuerze', label: 'Gewürze, Öl & Saucen', icon: '🧂' },
+  { id: 'backen', label: 'Backen, Süsses & Frühstück', icon: '🍯' },
+  { id: 'tiefkuehl', label: 'Tiefkühl', icon: '❄️' },
+  { id: 'getraenke', label: 'Getränke', icon: '🥤' },
+  { id: 'haushalt', label: 'Haushalt & Drogerie', icon: '🧴' },
+  { id: 'sonstiges', label: 'Sonstiges', icon: '🛍️' }
+];
+// Erkennungsregeln (Reihenfolge wichtig: die erste passende Regel gewinnt; Wörter ohne Umlaute geschrieben)
+const CAT_RULES = [
+  ['tiefkuehl', /tiefgek|tiefkuhl|\btk\b|gefror|\bglace\b|eiscreme/],
+  ['haushalt', /backpapier|alufolie|frischhaltefolie|spulmittel|serviette|haushaltspapier|kuchenrolle|toilettenpapier|zahnpasta|seife|waschmittel|abfallsack/],
+  ['gemuese', /zitronensaft|limettensaft|saft (einer|von|aus|\d)|zitronenschale|limettenschale|zitronenabrieb/],
+  ['gewuerze', /bruhe|bouillon|\bfond\b|salz|\bpfeffer\b|\bol\b|olivenol|rapsol|sonnenblumenol|sesamol|kokosol|bratol|essig|balsamico|\bsenf\b|ketchup|mayonnaise|\bmayo\b|sojasauce|sojasosse|tamari|fischsauce|worcester|sambal|sriracha|tahin|curry|kurkuma|paprikapulver|edelsusspaprika|paprika edelsuss|kreuzkummel|kumin|zimt|muskat|oregano|majoran|gewurz|chiliflocken|chilipulver|cayenne|garam masala|nelke|lorbeer|kardamom|koriandersamen|senfsamen|vanille|hefeflocken|aromat|streuwurze|harissa|miso/],
+  ['konserven', /\bdosen?\b|konserve|gehackte tomaten|tomaten,? gehackt|passata|passierte|tomatenmark|pelati|kokosmilch|kokosnussmilch|thunfisch|kidney|oliven|kapern|essiggurke|gewurzgurke|cornichon|pesto/],
+  ['brot', /\bbrot|brotchen|baguette|toast|tortilla|\bwraps?\b|fladenbrot|\bnaan|\bpita|zwieback|paniermehl|semmelbrosel|knackebrot|gipfeli|croissant|zopf/],
+  ['backen', /mehl|zucker|backpulver|\bhefe|natron|starke|maizena|gelatine|agar|kakao|schokolade|kuvertur|honig|sirup|konfiture|marmelade|haferflocken|musli|cornflakes|nuss|mandel|cashew|pinienkern|sonnenblumenkern|kurbiskern|sesam|leinsamen|chiasamen|rosinen|datteln|cranberries|kokosflocken|kokosraspel|streusel|biskuit|lebkuchen|vanillin/],
+  ['fleisch', /hackfleisch|gehacktes|\bhack\b|\brind|schwein|\bkalb|\blamm|poulet|hahnchen|\bhuhn|chicken|\bpute|truthahn|\bspeck|schinken|wurst|salami|cervelat|chorizo|lachs|fisch|forelle|dorsch|kabeljau|crevette|garnele|shrimp|scampi|filet|steak|schnitzel|geschnetzelt|\bente\b|meeresfruchte|muschel|tintenfisch/],
+  ['milch', /milch|sahne|\brahm|joghurt|jogurt|quark|butter|\bkase|kase\b|parmesan|pecorino|grana|mozzarella|\bfeta|ricotta|mascarpone|burrata|gruyere|emmentaler|raclette|halloumi|\beier?\b|eigelb|eiweiss|creme fraiche|schmand|tofu|tempeh|seitan|paneer|frischkase|huttenkase|skyr|gnocchi|blatterteig|kuchenteig|pizzateig|hummus|ravioli|tortellini/],
+  ['teigwaren', /spaghetti|nudel|pasta|penne|fusilli|farfalle|rigatoni|lasagne|tagliatelle|linguine|makkaroni|hornli|spatzli|\breis\b|basmati|jasminreis|risotto|couscous|bulgur|quinoa|linsen|polenta|kichererbsen|getrocknete bohnen|ramen|glasnudel|reisnudel|udon|soba/],
+  ['getraenke', /\bwasser\b|mineralwasser|saft|\bwein\b|weisswein|rotwein|\bbier\b|cola|kaffee|espresso|\btee\b|prosecco|\bsekt\b|limonade/],
+  ['gemuese', /tomate|gurke|salat|zwiebel|schalotte|knoblauch|karotte|mohre|ruebli|kartoffel|paprika|peperoni|zucchini|aubergine|spinat|lauch|sellerie|brokkoli|broccoli|blumenkohl|kohl|pilz|champignon|kurbis|ingwer|chili|pfefferschote|avocado|zitrone|limette|apfel|birne|banane|beere|orange|mandarine|mango|ananas|traube|kiwi|pfirsich|aprikose|zwetschge|pflaume|kirsche|melone|granatapfel|petersilie|basilikum|koriander|schnittlauch|dill|minze|rosmarin|thymian|salbei|krauter|radieschen|rucola|fenchel|\bmais|erbse|bohne|spargel|\brande|susskartoffel|pastinake|rettich|mangold|sprossen|edamame|zitronengras|gemuse|obst/]
+];
+const catById = id => CATS.find(c => c.id === id) || CATS[CATS.length - 1];
+const cleanName = name => norm(name).replace(/\(.*?\)/g, ' ').split(',')[0].replace(/\s+/g, ' ').trim();
+function categorize(unit, name) {
+  const own = state.settings.catMap?.[cleanName(name)];
+  if (own) return own;
+  const hay = norm((unit || '') + ' ' + name);
+  for (const [id, re] of CAT_RULES) if (re.test(hay)) return id;
+  return 'sonstiges';
+}
+function orderedCats() {
+  const order = state.settings.catOrder || [];
+  return [...order.map(id => CATS.find(c => c.id === id)).filter(Boolean), ...CATS.filter(c => !order.includes(c.id))];
+}
+
+const activeList = () => state.lists.find(l => l.id === state.activeList) || state.lists[0];
+function createList(name) {
+  const l = { id: 'l' + Date.now().toString(36), name: name.trim() || 'Einkaufsliste', items: [] };
+  state.lists.push(l); state.activeList = l.id; return l;
+}
+async function saveShop() { await Store.set('lists', { lists: state.lists, active: state.activeList }); updateShopBadge(); }
+function updateShopBadge() {
+  const n = state.lists.reduce((s, l) => s + l.items.filter(i => !i.done).length, 0), b = $('#shopBadge');
+  b.hidden = !n; b.textContent = n;
+}
+function newItem(p, qty, name, sources) {
+  return {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    key: norm(p.unit) + '|' + cleanName(name), qty, unit: p.unit, name, sources, done: false, cat: categorize(p.unit, name)
+  };
+}
+function addToShop(list, r, servings) {
   const f = servings / (r.servings || 1);
   for (const line of r.ingredients) {
     if (isSubHeading(line)) continue;
     const p = parseIngredient(line);
-    let qty = p.qty == null ? null : (p.qty2 ?? p.qty) * f;
+    const qty = p.qty == null ? null : (p.qty2 ?? p.qty) * f;
     const name = p.name || p.raw;
-    const key = norm(p.unit) + '|' + norm(name).replace(/\s+/g, ' ').trim();
-    const ex = state.shop.find(i => !i.done && i.key === key);
+    const key = norm(p.unit) + '|' + cleanName(name);
+    const ex = list.items.find(i => !i.done && i.key === key);
     if (ex) {
       if (qty != null) ex.qty = (ex.qty || 0) + qty;
       if (!ex.sources.includes(r.title)) ex.sources.push(r.title);
-    } else {
-      state.shop.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), key, qty, unit: p.unit, name, sources: [r.title], done: false });
-    }
+    } else list.items.push(newItem(p, qty, name, [r.title]));
   }
 }
 const shopText = i => [fmtQty(i.qty), i.unit, i.name].filter(Boolean).join(' ');
 
+/* Kleiner Auswahl-Dialog: gibt den gewählten Wert zurück (oder null) */
+function choose(title, options) {
+  return new Promise(res => {
+    const d = $('#genDlg');
+    $('#genTitle').textContent = title;
+    $('#genBody').innerHTML = options.map((o, i) => `<button class="opt ${o.on ? 'on' : ''} ${o.danger ? 'danger' : ''}" data-i="${i}">${esc(o.label)}</button>`).join('');
+    $('#genFoot').innerHTML = ''; $('#genFoot').hidden = true;
+    let done = false;
+    const finish = v => { if (done) return; done = true; d.onclick = null; d.onclose = null; if (d.open) d.close(); res(v); };
+    d.onclick = e => {
+      const b = e.target.closest('[data-i]');
+      if (b) finish(options[+b.dataset.i].value);
+      else if (e.target.closest('[data-close]') || e.target === d) finish(null);
+    };
+    d.onclose = () => finish(null);
+    d.showModal();
+  });
+}
+async function chooseList(title = 'Auf welche Liste?') {
+  if (state.lists.length === 1) return state.lists[0];
+  const v = await choose(title, [
+    ...state.lists.map(l => ({ label: (l.id === activeList().id ? '✓ ' : '') + l.name, value: l.id })),
+    { label: '＋ Neue Liste …', value: '__new' }
+  ]);
+  if (!v) return null;
+  if (v === '__new') { const n = prompt('Name der neuen Liste:', 'Neue Liste'); return n ? createList(n) : null; }
+  return state.lists.find(l => l.id === v);
+}
+
+function openCatOrder() {
+  const d = $('#genDlg');
+  let order = orderedCats().map(c => c.id);
+  const draw = () => {
+    $('#genBody').innerHTML = order.map((id, i) => {
+      const c = catById(id);
+      return `<div class="order-row"><span>${c.icon} ${esc(c.label)}</span>
+        <button class="icon-btn" data-up="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Nach oben">↑</button>
+        <button class="icon-btn" data-down="${i}" ${i === order.length - 1 ? 'disabled' : ''} aria-label="Nach unten">↓</button></div>`;
+    }).join('');
+  };
+  $('#genTitle').textContent = 'Reihenfolge der Abteilungen';
+  $('#genFoot').hidden = false;
+  $('#genFoot').innerHTML = '<button class="btn" data-reset>Standard</button><button class="btn primary" data-ok>Fertig</button>';
+  draw();
+  d.onclose = null;
+  d.onclick = async e => {
+    const up = e.target.closest('[data-up]'), down = e.target.closest('[data-down]');
+    if (up) { const i = +up.dataset.up; [order[i - 1], order[i]] = [order[i], order[i - 1]]; draw(); return; }
+    if (down) { const i = +down.dataset.down; [order[i + 1], order[i]] = [order[i], order[i + 1]]; draw(); return; }
+    if (e.target.closest('[data-reset]')) { order = CATS.map(c => c.id); draw(); return; }
+    if (e.target.closest('[data-ok]')) {
+      state.settings.catOrder = order; await Store.set('settings', state.settings);
+      d.onclick = null; d.close(); toast('Reihenfolge gespeichert');
+      if (location.hash === '#/shop') renderShop($('#app'));
+      return;
+    }
+    if (e.target.closest('[data-close]') || e.target === d) { d.onclick = null; d.close(); }
+  };
+  d.showModal();
+}
+
+async function shareList(L) {
+  const open = L.items.filter(i => !i.done);
+  const parts = orderedCats().map(c => {
+    const items = open.filter(i => (i.cat || 'sonstiges') === c.id);
+    return items.length ? `\n${c.icon} ${c.label}\n` + items.map(i => '• ' + shopText(i)).join('\n') : '';
+  }).filter(Boolean);
+  const text = `🛒 ${L.name}\n` + parts.join('\n');
+  try { if (navigator.share) { await navigator.share({ title: L.name, text }); return; } } catch (e) { if (e.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(text); toast('Liste kopiert 📋'); } catch (e) { prompt('Liste zum Kopieren:', text); }
+}
+
 function renderShop(app) {
-  $('#pageTitle').textContent = 'Einkaufsliste';
-  const open = state.shop.filter(i => !i.done), done = state.shop.filter(i => i.done);
+  $('#pageTitle').textContent = 'Einkaufen';
+  const L = activeList();
+  const open = L.items.filter(i => !i.done), done = L.items.filter(i => i.done);
+  const groups = orderedCats().map(c => ({ c, items: open.filter(i => (i.cat || 'sonstiges') === c.id) })).filter(g => g.items.length);
   const item = i => `<li data-id="${i.id}" class="${i.done ? 'done' : ''}"><span class="box"></span>
       <span class="txt">${esc(shopText(i))}${i.sources.length ? `<span class="src">${esc(i.sources.join(', '))}</span>` : ''}</span>
+      ${i.done ? '' : `<button class="mini" data-cat="${i.id}" aria-label="Abteilung ändern" title="Abteilung ändern">${catById(i.cat).icon}</button>`}
       <button class="del" data-del="${i.id}" aria-label="Entfernen">✕</button></li>`;
   app.innerHTML = `
+    <div class="chips" style="margin-top:10px">
+      ${state.lists.map(l => { const n = l.items.filter(i => !i.done).length; return `<button class="chip ${l.id === L.id ? 'on' : ''}" data-list="${l.id}">${esc(l.name)}${n ? ' · ' + n : ''}</button>`; }).join('')}
+      <button class="chip" data-newlist>＋ Neue Liste</button>
+    </div>
+    <div class="list-head"><h2>${esc(L.name)}</h2><button class="icon-btn" data-menu aria-label="Listen-Optionen">⋯</button></div>
     <form class="shop-add" id="shopForm">
       <label class="sr-only" for="shopIn">Artikel</label>
       <input type="text" id="shopIn" placeholder="Artikel hinzufügen, z. B. 1 l Milch" autocomplete="off">
       <button class="btn primary" type="submit" aria-label="Hinzufügen">+</button>
     </form>
-    <button class="btn block" id="pick">📖 Zutaten aus Rezepten übernehmen</button>
-    <div style="height:14px"></div>
-    ${state.shop.length ? '' : `<div class="empty"><div class="big">🛒</div><p>Deine Einkaufsliste ist leer.<br>Öffne ein Rezept und tippe auf „Zutaten auf die Einkaufsliste“.</p></div>`}
-    ${open.length ? `<ul class="shop-list" id="openList">${open.map(item).join('')}</ul>` : ''}
-    ${done.length ? `<h2 style="font-size:16px;margin:20px 4px 8px" class="muted">Erledigt (${done.length})</h2><ul class="shop-list">${done.map(item).join('')}</ul>` : ''}
-    ${state.shop.length ? `<div class="btn-row">
-      <button class="btn" id="copyShop">📤 Liste teilen</button>
-      ${done.length ? '<button class="btn" id="clearDone">Erledigte entfernen</button>' : ''}
-      <button class="btn danger" id="clearAll">Alles löschen</button></div>` : ''}`;
+    <button class="btn block" data-pick>📖 Zutaten aus Rezepten übernehmen</button>
+    ${L.items.length ? '' : `<div class="empty"><div class="big">🛒</div><p>Diese Liste ist leer.<br>Öffne ein Rezept und tippe auf „Zutaten auf die Einkaufsliste“ – oder tippe oben einen Artikel ein.</p></div>`}
+    ${groups.map(g => `<h3 class="cat-h">${g.c.icon} ${esc(g.c.label)}<span>${g.items.length}</span></h3><ul class="shop-list">${g.items.map(item).join('')}</ul>`).join('')}
+    ${done.length ? `<h3 class="cat-h muted">✓ Erledigt<span>${done.length}</span></h3><ul class="shop-list">${done.map(item).join('')}</ul>` : ''}
+    ${open.length ? `<p class="hint" style="margin-top:14px">Tipp: Steht etwas in der falschen Abteilung? Tippe auf das kleine Symbol rechts daneben. Die App merkt sich das für das nächste Mal.</p>` : ''}
+    ${L.items.length ? `<div class="btn-row">
+      <button class="btn" data-share>📤 Teilen</button>
+      ${done.length ? '<button class="btn" data-cleardone>Erledigte entfernen</button>' : ''}
+    </div>` : ''}`;
 
   $('#shopForm').onsubmit = async e => {
     e.preventDefault();
     const v = $('#shopIn').value.trim(); if (!v) return;
     const p = parseIngredient(v);
-    state.shop.push({ id: Date.now().toString(36), key: norm(p.unit) + '|' + norm(p.name || v), qty: p.qty, unit: p.unit, name: p.name || v, sources: [], done: false });
+    L.items.push(newItem(p, p.qty, p.name || v, []));
     await saveShop(); renderShop(app); $('#shopIn').focus();
   };
   app.onclick = async e => {
     if (location.hash !== '#/shop') return;
-    const del = e.target.closest('[data-del]');
-    if (del) { state.shop = state.shop.filter(i => i.id !== del.dataset.del); await saveShop(); renderShop(app); return; }
-    const li = e.target.closest('.shop-list li');
-    if (li) { const i = state.shop.find(x => x.id === li.dataset.id); if (i) { i.done = !i.done; await saveShop(); renderShop(app); } }
+    const t = e.target;
+    const listBtn = t.closest('[data-list]');
+    if (listBtn) { state.activeList = listBtn.dataset.list; await saveShop(); renderShop(app); return; }
+    if (t.closest('[data-newlist]')) {
+      const n = prompt('Name der neuen Liste (z. B. Wocheneinkauf, Party Samstag):', '');
+      if (n && n.trim()) { createList(n); await saveShop(); renderShop(app); toast(`Liste „${n.trim()}“ angelegt`); }
+      return;
+    }
+    if (t.closest('[data-pick]')) { openPicker(); return; }
+    if (t.closest('[data-share]')) { shareList(L); return; }
+    if (t.closest('[data-cleardone]')) { L.items = L.items.filter(i => !i.done); await saveShop(); renderShop(app); return; }
+    if (t.closest('[data-menu]')) { listMenu(L, app); return; }
+    const catBtn = t.closest('[data-cat]');
+    if (catBtn) {
+      const i = L.items.find(x => x.id === catBtn.dataset.cat); if (!i) return;
+      const v = await choose(`Abteilung für „${i.name}“`, orderedCats().map(c => ({ label: `${c.icon} ${c.label}`, value: c.id, on: c.id === i.cat })));
+      if (!v) return;
+      i.cat = v;
+      state.settings.catMap = { ...(state.settings.catMap || {}), [cleanName(i.name)]: v };
+      await Store.set('settings', state.settings); await saveShop(); renderShop(app);
+      toast(`Gemerkt: kommt künftig zu „${catById(v).label}“`);
+      return;
+    }
+    const del = t.closest('[data-del]');
+    if (del) { L.items = L.items.filter(i => i.id !== del.dataset.del); await saveShop(); renderShop(app); return; }
+    const li = t.closest('.shop-list li');
+    if (li) { const i = L.items.find(x => x.id === li.dataset.id); if (i) { i.done = !i.done; await saveShop(); renderShop(app); } }
   };
-  $('#pick').onclick = openPicker;
-  $('#clearDone')?.addEventListener('click', async () => { state.shop = state.shop.filter(i => !i.done); await saveShop(); renderShop(app); });
-  $('#clearAll')?.addEventListener('click', async () => { if (!confirm('Ganze Einkaufsliste löschen?')) return; state.shop = []; await saveShop(); renderShop(app); });
-  $('#copyShop')?.addEventListener('click', async () => {
-    const text = 'Einkaufsliste:\n' + open.map(i => '• ' + shopText(i)).join('\n');
-    try { if (navigator.share) { await navigator.share({ title: 'Einkaufsliste', text }); return; } } catch (e) { if (e.name === 'AbortError') return; }
-    try { await navigator.clipboard.writeText(text); toast('Liste kopiert 📋'); } catch (e) { prompt('Liste zum Kopieren:', text); }
-  });
+}
+
+async function listMenu(L, app) {
+  const v = await choose(`Liste „${L.name}“`, [
+    { label: '✏️ Umbenennen', value: 'rename' },
+    { label: '📤 Teilen / kopieren', value: 'share' },
+    { label: '↕️ Reihenfolge der Abteilungen', value: 'order' },
+    { label: '🧹 Alle Einträge löschen', value: 'clear', danger: true },
+    { label: '🗑 Liste löschen', value: 'delete', danger: true }
+  ]);
+  if (v === 'rename') {
+    const n = prompt('Neuer Name:', L.name);
+    if (n && n.trim()) { L.name = n.trim(); await saveShop(); renderShop(app); }
+  } else if (v === 'share') shareList(L);
+  else if (v === 'order') openCatOrder();
+  else if (v === 'clear') {
+    if (confirm(`Alle Einträge aus „${L.name}“ löschen?`)) { L.items = []; await saveShop(); renderShop(app); }
+  } else if (v === 'delete') {
+    if (!confirm(`Liste „${L.name}“ ganz löschen?`)) return;
+    state.lists = state.lists.filter(l => l.id !== L.id);
+    if (!state.lists.length) createList('Einkaufsliste');
+    state.activeList = state.lists[0].id;
+    await saveShop(); renderShop(app); toast('Liste gelöscht');
+  }
 }
 
 function openPicker() {
   const dlg = $('#pickDlg');
+  $('#pickTitle').textContent = `Rezepte für „${activeList().name}“`;
   const list = [...state.recipes].sort((a, b) => a.title.localeCompare(b.title, 'de'));
   $('#pickList').innerHTML = list.length ? list.map(r => `<label class="pick"><input type="checkbox" value="${esc(r.id)}"><span>${esc(r.title)} <span class="hint">· ${r.servings} Port.</span></span></label>`).join('')
     : '<p class="muted">Noch keine Rezepte vorhanden.</p>';
@@ -799,7 +999,8 @@ $('#pickDlg').addEventListener('click', e => { if (e.target.closest('[data-close
 $('#pickOk').addEventListener('click', async () => {
   const ids = $$('#pickList input:checked').map(i => i.value);
   if (!ids.length) { toast('Bitte mindestens ein Rezept auswählen.'); return; }
-  ids.forEach(id => { const r = byId(id); if (r) addToShop(r, r.servings); });
+  const L = activeList();
+  ids.forEach(id => { const r = byId(id); if (r) addToShop(L, r, r.servings); });
   await saveShop(); $('#pickDlg').close();
   toast(`Zutaten aus ${ids.length} Rezept${ids.length > 1 ? 'en' : ''} hinzugefügt`);
   if (location.hash === '#/shop') renderShop($('#app'));
@@ -1161,10 +1362,14 @@ async function importBackup(file) {
    ========================================================= */
 async function init() {
   updateThemeColor();
-  const [local, shop, settings] = await Promise.all([Store.get('local'), Store.get('shop'), Store.get('settings')]);
+  const [local, lists, oldShop, settings] = await Promise.all([Store.get('local'), Store.get('lists'), Store.get('shop'), Store.get('settings')]);
   if (local && local.recipes) state.local = { recipes: local.recipes, deleted: local.deleted || [] };
-  if (Array.isArray(shop)) state.shop = shop;
   if (settings) state.settings = { ...state.settings, ...settings };
+  if (lists && Array.isArray(lists.lists) && lists.lists.length) { state.lists = lists.lists; state.activeList = lists.active; }
+  else {
+    const l = createList('Einkaufsliste');
+    if (Array.isArray(oldShop)) l.items = oldShop.map(i => ({ ...i, cat: i.cat || categorize(i.unit, i.name) }));
+  }
   try {
     const res = await fetch('recipes.json', { cache: 'no-store' });
     if (!res.ok) throw new Error(res.status);
