@@ -158,6 +158,7 @@ details.panel[open] > summary::after { transform: rotate(180deg); }
 .tag { font-size: 13px; padding: 2px 10px; border-radius: 12px; background: var(--card-2); color: var(--muted); font-weight: 600; }
 .local-badge { font-size: 12px; padding: 2px 8px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); font-weight: 700; }
 
+
 /* Detail */
 .hero { position: relative; aspect-ratio: 16 / 9; max-height: 420px; width: 100%; background: var(--card-2); overflow: hidden; border-radius: 0 0 var(--radius) var(--radius); }
 @media (min-width: 760px) { .hero { border-radius: var(--radius); margin-top: 16px; } }
@@ -266,6 +267,50 @@ table.nut thead th { font-size: 13px; color: var(--muted); font-weight: 600; }
 .set-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .stepper { display: flex; align-items: center; gap: 10px; flex: none; }
 .stepper b { min-width: 2ch; text-align: center; font-size: 20px; }
+
+/* Favoriten, Statistik */
+.fav-btn { background: none; border: 0; font-size: 26px; width: 44px; height: 44px; cursor: pointer; padding: 0; }
+.fav-dot { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,.9); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.cook-dot { position: absolute; left: 8px; bottom: 8px; background: rgba(0,0,0,.55); color: #fff; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+.coll-tag { background: var(--accent-soft); color: var(--accent); }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 6px 0 4px; }
+.tile { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); }
+.tile b { display: block; font-size: 26px; font-weight: 800; line-height: 1.2; }
+.tile b small { font-size: 15px; color: var(--muted); font-weight: 600; }
+.tile span { font-size: 13px; color: var(--muted); }
+.srow { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border); text-decoration: none; color: inherit; }
+.srow:last-of-type { border-bottom: 0; }
+.srow .rank { width: 22px; text-align: center; font-weight: 800; color: var(--muted); flex: none; }
+.pthumb.sm { width: 46px; height: 46px; border-radius: 10px; }
+.pthumb.sm .ph { font-size: 22px; }
+.srow .cnt { font-weight: 800; color: var(--accent); flex: none; }
+.bar { display: block; height: 6px; background: var(--card-2); border-radius: 3px; margin-top: 5px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+
+/* Druckansicht */
+.print-sheet { background: #fff; color: #1d1b18; border-radius: var(--radius); padding: 24px; margin: 16px 0; box-shadow: var(--shadow); font-size: 15px; line-height: 1.45; }
+.ps-head { display: flex; gap: 18px; align-items: flex-start; border-bottom: 2px solid #c9502a; padding-bottom: 12px; margin-bottom: 16px; }
+.ps-img { width: 34%; max-width: 220px; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; flex: none; }
+.ps-head h1 { font-size: 25px; margin: 0 0 6px; line-height: 1.2; }
+.ps-meta, .ps-tags { margin: 0 0 4px; color: #5a554e; font-size: 14px; }
+.ps-cols { display: grid; grid-template-columns: 1fr 1.8fr; gap: 26px; }
+@media (max-width: 560px) { .ps-cols { grid-template-columns: 1fr; gap: 10px; } .ps-head { flex-direction: column; } .ps-img { width: 100%; max-width: none; } }
+.print-sheet h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .07em; color: #c9502a; margin: 0 0 8px; }
+.ps-ing { padding-left: 18px; margin: 0; } .ps-ing li { margin: 3px 0; } .ps-ing li.sub { list-style: none; margin-left: -18px; font-weight: 700; margin-top: 8px; }
+.ps-steps { padding-left: 20px; margin: 0; } .ps-steps li { margin: 0 0 8px; }
+.ps-box { margin-top: 16px; padding-top: 10px; border-top: 1px solid #e3ddd3; } .ps-box p { margin: 0; }
+.ps-foot { margin-top: 18px; padding-top: 8px; border-top: 1px solid #e3ddd3; font-size: 12px; color: #77716a; word-break: break-all; }
+@media print {
+  header.top, nav.bottom, .no-print, #toast, dialog { display: none !important; }
+  html, body { background: #fff !important; color: #000; padding: 0 !important; margin: 0; }
+  .wrap { max-width: none; padding: 0; }
+  .print-sheet { box-shadow: none; padding: 0; margin: 0; border-radius: 0; font-size: 11pt; }
+  .ps-cols { grid-template-columns: 1fr 1.8fr !important; }
+  .ps-head { flex-direction: row !important; } .ps-img { width: 30% !important; max-width: 200px !important; }
+  .ps-ing li, .ps-steps li { break-inside: avoid; }
+  a { color: #000; text-decoration: none; }
+  @page { margin: 14mm; }
+}
 
 /* Migros */
 .shop-list li .mini.m { background: #ff6600; color: #fff; font-weight: 900; font-size: 17px; font-family: Arial, sans-serif; }
@@ -538,7 +583,9 @@ function normalizeRecipe(r) {
     nutrition: { calories: num(n.calories), protein: num(n.protein), fat: num(n.fat), carbs: num(n.carbs) },
     notes: String(r.notes || ''),
     last_cooked: r.last_cooked ? String(r.last_cooked).slice(0, 10) : '',
-    added_at: r.added_at || new Date().toISOString()
+    added_at: r.added_at || new Date().toISOString(),
+    lang: r.lang === 'de' || r.lang === 'en' ? r.lang : '',
+    cooked_dates: Array.isArray(r.cooked_dates) ? [...new Set(r.cooked_dates.map(d => String(d).slice(0, 10)).filter(d => /^\d{4}-\d\d-\d\d$/.test(d)))].sort() : []
   };
 }
 
@@ -584,12 +631,23 @@ function harmonizeTags(tags) {
   return out;
 }
 
+/* Sprache eines Rezepts erkennen (Deutsch / Englisch) */
+const LANG_DE = new Set('und mit der die das den dem des ein eine einen einem einer fur oder zu auf bis etwas prise el tl minuten min std stunde stunden zwiebel zwiebeln knoblauch salz pfeffer schneiden hacken hinzufugen dazugeben kochen braten anbraten ruhren umruhren verruhren erhitzen backen ofen pfanne topf schussel wasser zucker mehl butter dann danach nun alles gut kurz bei hitze garen lassen ca stuck dose bund zehen etwa geben wurfeln abschmecken servieren'.split(' '));
+const LANG_EN = new Set('and with the of a an to for or until cup cups tbsp tsp tablespoon tablespoons teaspoon teaspoons minutes minute hour hours onion onions garlic salt pepper chop chopped dice diced add stir cook heat bake oven pan pot bowl water sugar flour then into over about large small medium serve season taste whisk mix combine pour remove place set aside oz lb can cloves'.split(' '));
+function detectLang(r) {
+  const text = [r.title, ...r.ingredients, ...r.steps].join(' ').toLowerCase();
+  let de = (text.match(/[äöüß]/g) || []).length * 0.5, en = 0;
+  for (const w of norm(text).split(/[^a-z]+/)) { if (LANG_DE.has(w)) de++; if (LANG_EN.has(w)) en++; }
+  if (de + en < 3) return '';
+  return de >= en ? 'de' : 'en';
+}
+
 function rebuild() {
   const map = new Map();
   const del = new Set(state.local.deleted);
   for (const r of state.remote) if (!del.has(r.id)) map.set(r.id, r);
   for (const [id, r] of Object.entries(state.local.recipes)) map.set(id, r);
-  state.recipes = [...map.values()].map(r => ({ ...r, tags: harmonizeTags(r.tags) }));
+  state.recipes = [...map.values()].map(r => ({ ...r, tags: harmonizeTags(r.tags), language: r.lang || detectLang(r) }));
   $('#headCount').textContent = state.recipes.length ? state.recipes.length + ' Rezepte' : '';
   updateShopBadge();
 }
@@ -620,10 +678,13 @@ function getRepo() {
   }
   return '';
 }
-function issueUrl(link) {
+function issueUrl(links) {
   const repo = getRepo();
   if (!repo) return '';
-  return `https://github.com/${repo}/issues/new?title=${encodeURIComponent(link)}&body=${encodeURIComponent('Tags: \nNotiz: ')}`;
+  links = [].concat(links);
+  const title = links.length === 1 ? links[0] : `${links.length} Rezepte importieren`;
+  const body = (links.length > 1 ? links.join('\n') + '\n\n' : '') + 'Tags: \nNotiz: ';
+  return `https://github.com/${repo}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
 }
 
 /* =========================================================
@@ -633,7 +694,7 @@ function route() {
   if (state.wakeLock) { state.wakeLock.release().catch(() => {}); state.wakeLock = null; }
   const parts = (location.hash.slice(1) || '/').split('/').filter(Boolean);
   const view = parts[0] || 'list', id = parts[1] ? decodeURIComponent(parts[1]) : '';
-  const navKey = { list: 'list', r: 'list', cook: 'list', plan: 'plan', shop: 'shop', new: 'new', edit: 'new', more: 'more' }[view] || 'list';
+  const navKey = { list: 'list', r: 'list', cook: 'list', stats: 'list', print: 'list', plan: 'plan', shop: 'shop', new: 'new', edit: 'new', more: 'more' }[view] || 'list';
   $$('nav.bottom a').forEach(a => a.classList.toggle('active', a.dataset.nav === navKey));
   const app = $('#app');
   if (view === 'r') renderDetail(app, id);
@@ -642,6 +703,8 @@ function route() {
   else if (view === 'shop') renderShop(app);
   else if (view === 'plan') renderPlan(app);
   else if (view === 'cook') renderCook(app);
+  else if (view === 'stats') renderStats(app);
+  else if (view === 'print') renderPrint(app, id);
   else if (view === 'more') renderMore(app);
   else { renderList(app); requestAnimationFrame(() => window.scrollTo(0, state.listScroll)); return; }
   window.scrollTo(0, 0);
@@ -669,11 +732,22 @@ function renderList(app) {
         <option value="cooked">Zuletzt gekocht</option><option value="fast">Schnellste</option>
       </select>
     </div>
+    ${(() => {
+      const fn = state.recipes.filter(r => isFav(r.id)).length, cs = collections();
+      if (!fn && !cs.length) { f.coll = ''; return ''; }
+      return `<div class="chips" id="collChips">
+        ${fn ? `<button class="chip ${f.coll === 'fav' ? 'on' : ''}" data-coll="fav">❤️ Favoriten <span class="hint">${fn}</span></button>` : ''}
+        ${cs.map(c => `<button class="chip ${f.coll === c.id ? 'on' : ''}" data-coll="${c.id}">📚 ${esc(c.name)} <span class="hint">${c.ids.filter(x => byId(x)).length}</span></button>`).join('')}
+      </div>`;
+    })()}
     ${tags.length ? `<div class="chips" id="chips">
       <button class="chip ${f.tags.size ? '' : 'on'}" data-tag="">Alle</button>
       ${tags.map(t => `<button class="chip ${f.tags.has(t) ? 'on' : ''}" data-tag="${esc(t)}">${esc(t)}</button>`).join('')}
     </div>` : ''}
-    <a class="btn block" href="#/cook" style="margin:2px 0 12px">🥕 Was koche ich mit …?${state.have.length ? ` <span class="hint">(${state.have.length} Zutaten)</span>` : ''}</a>
+    <div class="btn-row" style="margin:2px 0 12px">
+      <a class="btn" href="#/cook">🥕 Was koche ich mit …?${state.have.length ? ` <span class="hint">(${state.have.length})</span>` : ''}</a>
+      <a class="btn" href="#/stats">📊 Statistik</a>
+    </div>
     <div id="results"></div>`;
   $('#sort').value = f.sort;
   $('#q').addEventListener('input', e => { f.q = e.target.value; renderResults(); });
@@ -682,7 +756,13 @@ function renderList(app) {
     const b = e.target.closest('.chip'); if (!b) return;
     const t = b.dataset.tag;
     if (!t) f.tags.clear(); else f.tags.has(t) ? f.tags.delete(t) : f.tags.add(t);
-    $$('.chip', app).forEach(c => c.classList.toggle('on', c.dataset.tag ? f.tags.has(c.dataset.tag) : !f.tags.size));
+    $$('#chips .chip', app).forEach(c => c.classList.toggle('on', c.dataset.tag ? f.tags.has(c.dataset.tag) : !f.tags.size));
+    renderResults();
+  });
+  $('#collChips')?.addEventListener('click', e => {
+    const b = e.target.closest('[data-coll]'); if (!b) return;
+    f.coll = f.coll === b.dataset.coll ? '' : b.dataset.coll;
+    $$('#collChips [data-coll]').forEach(x => x.classList.toggle('on', x.dataset.coll === f.coll));
     renderResults();
   });
   renderResults();
@@ -692,6 +772,8 @@ function filteredRecipes() {
   const f = state.filter;
   const terms = norm(f.q).split(/\s+/).filter(Boolean);
   let list = state.recipes.filter(r => {
+    if (f.coll === 'fav' && !isFav(r.id)) return false;
+    if (f.coll && f.coll !== 'fav' && !(collections().find(c => c.id === f.coll)?.ids || []).includes(r.id)) return false;
     if (f.tags.size && ![...f.tags].every(t => r.tags.includes(t))) return false;
     if (!terms.length) return true;
     const hay = norm(r.title + ' ' + r.ingredients.join(' ') + ' ' + r.tags.join(' '));
@@ -719,7 +801,7 @@ function renderResults() {
   box.innerHTML = `<div class="grid">${list.map(r => {
     const t = totalTime(r);
     return `<a class="card" href="#/r/${encodeURIComponent(r.id)}">
-      <div class="thumb">${imageHtml(r)}</div>
+      <div class="thumb">${imageHtml(r)}${isFav(r.id) ? '<span class="fav-dot" aria-label="Favorit">❤️</span>' : ''}${cookCount(r) ? `<span class="cook-dot">${cookCount(r)}× gekocht</span>` : ''}</div>
       <div class="card-body">
         <h3>${esc(r.title)}</h3>
         <div class="meta">${t ? `<span>⏱ ${fmtMin(t)}</span>` : ''}${r.rating ? `<span class="stars" aria-label="${r.rating} von 5 Sternen">${starsText(r.rating)}</span>` : ''}${r.difficulty ? `<span>${DIFF[r.difficulty]}</span>` : ''}</div>
@@ -745,11 +827,13 @@ function renderDetail(app, id) {
     <div class="detail-head">
       <h2>${esc(r.title)}</h2>
       <div class="meta">
+        <button class="fav-btn ${isFav(id) ? 'on' : ''}" id="favBtn" aria-pressed="${isFav(id)}" aria-label="Favorit">${isFav(id) ? '❤️' : '🤍'}</button>
         <span class="star-pick" id="rate" aria-label="Bewertung">${[1, 2, 3, 4, 5].map(i => `<button data-v="${i}" class="${i <= r.rating ? 'on' : ''}" aria-label="${i} Sterne">★</button>`).join('')}</span>
         ${local ? '<span class="local-badge" title="Nur auf diesem Gerät geändert">auf diesem Gerät geändert</span>' : ''}
         ${plannedDatesFor(id).length ? `<a class="local-badge" href="#/plan" style="text-decoration:none">📅 Geplant: ${plannedDatesFor(id).slice(0, 3).map(shortDay).join(', ')}</a>` : ''}
       </div>
       ${r.tags.length ? `<div class="tags" style="margin-top:8px">${r.tags.map(x => `<span class="tag">${esc(x)}</span>`).join('')}</div>` : ''}
+      ${collections().filter(c => c.ids.includes(id)).length ? `<div class="tags" style="margin-top:6px">${collections().filter(c => c.ids.includes(id)).map(c => `<span class="tag coll-tag">📚 ${esc(c.name)}</span>`).join('')}</div>` : ''}
     </div>
     <div class="facts">
       ${r.prep_time ? `<div class="fact"><b>${fmtMin(r.prep_time)}</b><span>Vorbereitung</span></div>` : ''}
@@ -757,6 +841,7 @@ function renderDetail(app, id) {
       ${t ? `<div class="fact"><b>${fmtMin(t)}</b><span>Gesamt</span></div>` : ''}
       ${r.difficulty ? `<div class="fact"><b>${DIFF[r.difficulty]}</b><span>Schwierigkeit</span></div>` : ''}
       <div class="fact"><b>${r.last_cooked ? fmtDate(r.last_cooked) : '–'}</b><span>Zuletzt gekocht</span></div>
+      <div class="fact"><b>${cookCount(r)}×</b><span>gekocht</span></div>
     </div>
 
     <section class="panel">
@@ -789,6 +874,10 @@ function renderDetail(app, id) {
       <button class="btn primary" id="cooked">✅ Heute gekocht</button>
       <button class="btn" id="planIt">📅 Einplanen</button>
       ${'wakeLock' in navigator ? '<button class="btn" id="wake">🔆 Bildschirm anlassen</button>' : ''}
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="collBtn">📚 Sammlungen</button>
+      <a class="btn" href="#/print/${encodeURIComponent(r.id)}">🖨 Drucken / PDF</a>
     </div>
     <div class="btn-row">
       <a class="btn" href="#/edit/${encodeURIComponent(r.id)}">✏️ Bearbeiten</a>
@@ -839,7 +928,20 @@ function renderDetail(app, id) {
     dayEntries(d).push({ id: uid(), recipeId: id, servings: sv, cooked: false });
     await savePlan(); renderDetail(app, id); toast(`Für ${dayLabel(d).wd} eingeplant (${sv} Portionen) 📅`);
   };
-  $('#cooked').onclick = async () => { r.last_cooked = todayISO(); await saveRecipe(r); renderDetail(app, id); toast('Als heute gekocht gespeichert 👩‍🍳'); };
+  $('#cooked').onclick = async () => {
+    const today = todayISO();
+    if (cookDates(r).includes(today)) {
+      if (confirm('Heute ist schon als gekocht eingetragen. Eintrag von heute wieder entfernen?')) { await unmarkCooked(r, today); renderDetail(app, id); toast('Eintrag entfernt'); }
+      return;
+    }
+    await markCooked(r, today); renderDetail(app, id); toast(`Als heute gekocht gespeichert 👩‍🍳 (${cookCount(byId(id))}×)`);
+  };
+  $('#favBtn').onclick = async () => {
+    const on = await toggleFav(id);
+    const b = $('#favBtn'); b.textContent = on ? '❤️' : '🤍'; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on);
+    toast(on ? 'Zu den Favoriten hinzugefügt ❤️' : 'Aus den Favoriten entfernt');
+  };
+  $('#collBtn').onclick = async () => { if (await collectionsDialog(id)) { renderDetail(app, id); toast('Sammlungen gespeichert 📚'); } };
   $('#toShop').onclick = async () => {
     const L = await chooseList(); if (!L) return;
     const c = state.servings[id] || base;
@@ -1208,6 +1310,175 @@ $('#pickOk').addEventListener('click', async () => {
   toast(`Zutaten aus ${ids.length} Rezept${ids.length > 1 ? 'en' : ''} hinzugefügt`);
   if (location.hash === '#/shop') renderShop($('#app'));
 });
+
+/* =========================================================
+   Koch-Historie, Favoriten & Sammlungen
+   ========================================================= */
+const cookDates = r => (r.cooked_dates && r.cooked_dates.length) ? r.cooked_dates : (r.last_cooked ? [r.last_cooked] : []);
+const cookCount = r => cookDates(r).length;
+async function markCooked(r, iso) {
+  const set = new Set(cookDates(r)); set.add(iso);
+  r.cooked_dates = [...set].sort();
+  r.last_cooked = r.cooked_dates[r.cooked_dates.length - 1];
+  await saveRecipe(r);
+}
+async function unmarkCooked(r, iso) {
+  r.cooked_dates = cookDates(r).filter(d => d !== iso);
+  r.last_cooked = r.cooked_dates[r.cooked_dates.length - 1] || '';
+  await saveRecipe(r);
+}
+function relDays(iso) {
+  const d = Math.round((dParse(todayISO()) - dParse(iso)) / 864e5);
+  if (d <= 0) return 'heute';
+  if (d === 1) return 'gestern';
+  if (d < 14) return `vor ${d} Tagen`;
+  if (d < 60) return `vor ${Math.round(d / 7)} Wochen`;
+  if (d < 730) return `vor ${Math.round(d / 30.4)} Monaten`;
+  return `vor ${Math.round(d / 365)} Jahren`;
+}
+
+const favs = () => state.settings.favorites || [];
+const isFav = id => favs().includes(id);
+const collections = () => state.settings.collections || [];
+async function toggleFav(id) {
+  state.settings.favorites = isFav(id) ? favs().filter(x => x !== id) : [...favs(), id];
+  await Store.set('settings', state.settings);
+  return isFav(id);
+}
+function collectionsDialog(id) {
+  return new Promise(res => {
+    const d = $('#genDlg');
+    const draw = () => {
+      $('#genBody').innerHTML = (collections().length ? collections().map(c => `<label class="pick"><input type="checkbox" value="${c.id}" ${c.ids.includes(id) ? 'checked' : ''}>
+        <span>📚 ${esc(c.name)} <span class="hint">· ${c.ids.filter(x => byId(x)).length}</span></span></label>`).join('')
+        : '<p class="hint">Noch keine Sammlungen. Lege unten eine an, z. B. „Für Gäste“, „Schnell unter der Woche“ oder „Weihnachten“.</p>');
+    };
+    $('#genTitle').textContent = 'In Sammlungen speichern';
+    $('#genFoot').hidden = false;
+    $('#genFoot').innerHTML = '<button class="btn" data-newcoll>＋ Neue Sammlung</button><button class="btn primary" data-ok>Fertig</button>';
+    draw();
+    let done = false;
+    const finish = async save => {
+      if (done) return; done = true;
+      if (save) {
+        const checked = new Set($$('#genBody input:checked').map(i => i.value));
+        state.settings.collections = collections().map(c => ({ ...c, ids: checked.has(c.id) ? [...new Set([...c.ids, id])] : c.ids.filter(x => x !== id) }));
+        await Store.set('settings', state.settings);
+      }
+      d.onclick = null; d.onclose = null; if (d.open) d.close(); res(save);
+    };
+    d.onclick = async e => {
+      if (e.target.closest('[data-newcoll]')) {
+        const n = prompt('Name der neuen Sammlung:', '');
+        if (!n || !n.trim()) return;
+        const keep = new Set($$('#genBody input:checked').map(i => i.value));
+        const c = { id: 'c' + uid(), name: n.trim(), ids: [id] };
+        state.settings.collections = [...collections(), c]; keep.add(c.id);
+        await Store.set('settings', state.settings); draw();
+        $$('#genBody input').forEach(i => { i.checked = keep.has(i.value); });
+        return;
+      }
+      if (e.target.closest('[data-ok]')) { finish(true); return; }
+      if (e.target.closest('[data-close]') || e.target === d) finish(false);
+    };
+    d.onclose = () => { if (!d.open) finish(false); };
+    d.showModal();
+  });
+}
+
+/* =========================================================
+   Koch-Statistik
+   ========================================================= */
+function renderStats(app) {
+  $('#pageTitle').textContent = 'Koch-Statistik';
+  const all = state.recipes, today = todayISO(), year = today.slice(0, 4), month = today.slice(0, 7);
+  const events = all.flatMap(r => cookDates(r).map(d => ({ d, r })));
+  const cooked = all.filter(r => cookCount(r) > 0);
+  const top = [...cooked].sort((a, b) => cookCount(b) - cookCount(a) || String(b.last_cooked).localeCompare(String(a.last_cooked))).slice(0, 10);
+  const maxC = top.length ? cookCount(top[0]) : 1;
+  const longAgo = cooked.filter(r => r.last_cooked).sort((a, b) => a.last_cooked.localeCompare(b.last_cooked)).slice(0, 10);
+  const never = all.filter(r => !cookCount(r)).sort((a, b) => b.rating - a.rating || a.title.localeCompare(b.title, 'de'));
+  const tagC = {}; events.forEach(({ r }) => r.tags.forEach(t => { tagC[t] = (tagC[t] || 0) + 1; }));
+  const favTag = Object.keys(tagC).sort((a, b) => tagC[b] - tagC[a])[0];
+  const row = (r, i, right, extra = '') => `<a class="srow" href="#/r/${encodeURIComponent(r.id)}">
+      ${i != null ? `<span class="rank">${i}</span>` : ''}<span class="pthumb sm">${imageHtml(r)}</span>
+      <span class="pinfo"><b>${esc(r.title)}</b>${extra}</span><span class="cnt">${right}</span></a>`;
+  app.innerHTML = `
+    <a class="back-link" href="#/">‹ Alle Rezepte</a>
+    <div class="tiles">
+      <div class="tile"><b>${events.filter(x => x.d.startsWith(month)).length}×</b><span>diesen Monat gekocht</span></div>
+      <div class="tile"><b>${events.filter(x => x.d.startsWith(year)).length}×</b><span>gekocht in ${year}</span></div>
+      <div class="tile"><b>${cooked.length}<small> / ${all.length}</small></b><span>Rezepte schon gekocht</span></div>
+      <div class="tile"><b style="font-size:18px">${favTag ? esc(favTag) : '–'}</b><span>Lieblings-Kategorie</span></div>
+    </div>
+    ${!events.length ? `<div class="empty"><div class="big">📊</div><p>Noch keine Daten. Tippe nach dem Kochen im Rezept auf <b>✅ Heute gekocht</b> oder markiere Gerichte im Wochenplan als gekocht.</p></div>` : `
+    <section class="panel"><h2>🏆 Top 10</h2>
+      ${top.map((r, i) => row(r, i + 1, cookCount(r) + '×', `<span class="bar"><i style="width:${Math.max(6, cookCount(r) / maxC * 100)}%"></i></span>`)).join('')}
+    </section>
+    <section class="panel"><h2>⏳ Lange nicht mehr gekocht</h2>
+      <p class="hint" style="margin-top:0">Vielleicht ist es wieder einmal Zeit dafür?</p>
+      ${longAgo.map(r => row(r, null, '', `<span class="hint">zuletzt ${relDays(r.last_cooked)} · ${cookCount(r)}× gekocht</span>`)).join('')}
+    </section>`}
+    ${never.length ? `<section class="panel"><h2>🆕 Noch nie gekocht <span class="hint">(${never.length})</span></h2>
+      ${never.slice(0, 10).map(r => row(r, null, '', r.rating ? `<span class="stars">${starsText(r.rating)}</span>` : '')).join('')}
+      ${never.length > 10 ? `<p class="hint">… und ${never.length - 10} weitere.</p>` : ''}
+    </section>` : ''}
+    <p class="hint">Gezählt wird jedes „✅ Heute gekocht“ im Rezept und jedes „Als gekocht markieren“ im Wochenplan (höchstens einmal pro Tag und Rezept).</p>`;
+}
+
+/* =========================================================
+   Druck- und PDF-Ansicht
+   ========================================================= */
+function renderPrint(app, id) {
+  const r = byId(id);
+  if (!r) { app.innerHTML = '<div class="empty"><p>Rezept nicht gefunden.</p></div>'; return; }
+  $('#pageTitle').textContent = 'Drucken';
+  const base = r.servings || 1, c = state.servings[id] || base, f = c / base;
+  const o = state.printOpts || (state.printOpts = { img: true, nut: true, notes: true });
+  const n = r.nutrition || {}, t = totalTime(r);
+  const hasNut = ['calories', 'protein', 'fat', 'carbs'].some(k => n[k] > 0);
+  const nv = (v, u) => v == null ? '–' : (u === 'kcal' || v >= 10 ? Math.round(v) : Math.round(v * 10) / 10).toLocaleString('de-DE') + ' ' + u;
+  const meta = [`${c} ${c === 1 ? 'Portion' : 'Portionen'}`, r.prep_time ? 'Vorbereitung ' + fmtMin(r.prep_time) : '', r.cook_time ? 'Kochen ' + fmtMin(r.cook_time) : '',
+    t ? 'Gesamt ' + fmtMin(t) : '', r.difficulty ? DIFF[r.difficulty] : '', r.rating ? starsText(r.rating) : ''].filter(Boolean).join(' · ');
+  app.innerHTML = `
+    <div class="no-print">
+      <a class="back-link" href="#/r/${encodeURIComponent(id)}">‹ Zurück zum Rezept</a>
+      <div class="panel" style="margin-top:4px">
+        <div class="set-row" style="padding-top:0"><b>Portionen</b>
+          <span class="stepper"><button class="icon-btn" data-ps="-1" aria-label="Weniger">−</button><b>${c}</b><button class="icon-btn" data-ps="1" aria-label="Mehr">+</button></span></div>
+        <div class="chips-wrap">
+          ${[['img', '🖼 Bild'], ['nut', '🔥 Nährwerte'], ['notes', '📝 Notizen']].map(([k, l]) => `<button class="chip ${o[k] ? 'on' : ''}" data-po="${k}">${o[k] ? '✓ ' : ''}${l}</button>`).join('')}
+        </div>
+        <button class="btn primary block" id="doPrint">🖨 Drucken / als PDF sichern</button>
+        <p class="hint" style="margin-bottom:0"><b>iPhone:</b> Drucken → oben auf das Teilen-Symbol → „In Dateien sichern“ ergibt ein PDF.<br><b>Mac/PC:</b> Im Druckfenster „Als PDF sichern“ bzw. „Microsoft Print to PDF“ wählen.</p>
+      </div>
+    </div>
+    <article class="print-sheet">
+      <header class="ps-head">
+        ${o.img && r.image ? `<img class="ps-img" src="${esc(r.image)}" alt="" onerror="this.remove()">` : ''}
+        <div>
+          <h1>${esc(r.title)}</h1>
+          <p class="ps-meta">${esc(meta)}</p>
+          ${r.tags.length ? `<p class="ps-tags">${r.tags.map(esc).join(' · ')}</p>` : ''}
+        </div>
+      </header>
+      <div class="ps-cols">
+        <section><h2>Zutaten</h2><ul class="ps-ing">${r.ingredients.map(l => isSubHeading(l) ? `<li class="sub">${esc(l)}</li>` : `<li>${esc(scaleIngredient(l, f))}</li>`).join('')}</ul></section>
+        <section><h2>Zubereitung</h2><ol class="ps-steps">${r.steps.map(s => `<li>${esc(s)}</li>`).join('') || '<li>–</li>'}</ol></section>
+      </div>
+      ${o.nut && hasNut ? `<section class="ps-box"><h2>Nährwerte pro Portion</h2><p>Kalorien ${nv(n.calories, 'kcal')} · Eiweiss ${nv(n.protein, 'g')} · Fett ${nv(n.fat, 'g')} · Kohlenhydrate ${nv(n.carbs, 'g')}</p></section>` : ''}
+      ${o.notes && r.notes ? `<section class="ps-box"><h2>Notizen</h2><p class="notes">${esc(r.notes)}</p></section>` : ''}
+      <footer class="ps-foot">Quelle: ${esc(r.source_url || '–')}</footer>
+    </article>`;
+  app.onclick = e => {
+    if (!location.hash.startsWith('#/print/')) return;
+    const ps = e.target.closest('[data-ps]');
+    if (ps) { state.servings[id] = Math.max(1, Math.min(99, c + +ps.dataset.ps)); renderPrint(app, id); return; }
+    const po = e.target.closest('[data-po]');
+    if (po) { o[po.dataset.po] = !o[po.dataset.po]; renderPrint(app, id); return; }
+    if (e.target.closest('#doPrint')) window.print();
+  };
+}
 
 /* =========================================================
    Migros: Suche und Lieblingsprodukte
@@ -1594,7 +1865,7 @@ async function entryMenu(iso, id) {
   if (v === 'serv') { const n = parseInt(prompt('Wie viele Portionen?', en.servings), 10); if (n > 0 && n < 100) en.servings = n; }
   if (v === 'cooked') {
     en.cooked = !en.cooked;
-    if (en.cooked && (!r.last_cooked || r.last_cooked < iso)) { r.last_cooked = iso; await saveRecipe(r); }
+    if (en.cooked) await markCooked(r, iso); else await unmarkCooked(r, iso);
     if (en.cooked) toast('Als gekocht gespeichert 👩‍🍳');
   }
   if (v === 'edit') { const t = prompt('Notiz:', en.note); if (t && t.trim()) en.note = t.trim(); }
@@ -1821,8 +2092,8 @@ function renderForm(app, r) {
     ${isNew ? `
     <details class="panel" ${prefill ? 'open' : ''} id="ghBox">
       <summary>🔗 Rezept-Link automatisch importieren</summary>
-      <p class="hint">Füge den Link einer Rezeptseite ein. Es öffnet sich GitHub mit einem vorbereiteten „Issue“ – dort nur noch auf <b>Submit new issue</b> tippen. Nach 1–2 Minuten ist das Rezept in der App.</p>
-      <input type="url" id="ghUrl" placeholder="https://…" value="${esc(prefill)}">
+      <p class="hint">Füge den Link einer Rezeptseite ein – oder <b>mehrere Links, einen pro Zeile</b> (höchstens 20). Es öffnet sich GitHub mit einem vorbereiteten „Issue“ – dort nur noch auf <b>Submit new issue</b> tippen. Nach 1–2 Minuten sind die Rezepte in der App.</p>
+      <textarea id="ghUrl" placeholder="https://…&#10;https://…" style="min-height:90px" autocapitalize="off" spellcheck="false">${esc(prefill)}</textarea>
       <div class="btn-row"><button type="button" class="btn primary" id="ghGo">Auf GitHub importieren</button></div>
     </details>
     <details class="panel" id="pasteBox">
@@ -1916,11 +2187,16 @@ function renderForm(app, r) {
 
   if (isNew) {
     $('#ghGo').onclick = () => {
-      const link = $('#ghUrl').value.trim();
-      if (!isUrl(link)) { toast('Bitte einen vollständigen Link mit https:// einfügen.'); return; }
-      const dup = state.recipes.find(x => isUrl(x.source_url) && normalizeUrl(x.source_url) === normalizeUrl(link));
-      if (dup && !confirm(`Dieses Rezept ist schon vorhanden („${dup.title}“). Trotzdem importieren?`)) return;
-      const u = issueUrl(link);
+      const all = [...new Set(($('#ghUrl').value.match(/https?:\/\/[^\s<>"]+/g) || []).map(x => x.replace(/[.,;]+$/, '')))];
+      if (!all.length) { toast('Bitte mindestens einen vollständigen Link mit https:// einfügen.'); return; }
+      const dups = all.map(l => state.recipes.find(x => isUrl(x.source_url) && normalizeUrl(x.source_url) === normalizeUrl(l))).filter(Boolean);
+      const links = all.filter(l => !state.recipes.some(x => isUrl(x.source_url) && normalizeUrl(x.source_url) === normalizeUrl(l)));
+      if (dups.length) {
+        if (!links.length) { toast(dups.length === 1 ? `Schon vorhanden: „${dups[0].title}“` : 'Alle Rezepte sind schon vorhanden.', 4000); return; }
+        toast(`${dups.length} schon vorhanden – wird übersprungen`, 3500);
+      }
+      if (links.length > 20) { toast('Höchstens 20 Links pro Import – bitte aufteilen.', 4000); return; }
+      const u = issueUrl(links);
       if (!u) { toast('Bitte zuerst unter „Mehr“ dein GitHub-Repository eintragen.', 4000); return; }
       window.open(u, '_blank', 'noopener');
     };
@@ -1965,7 +2241,7 @@ function renderForm(app, r) {
       tags: [...new Set(F.tags.value.split(',').map(t => t.trim()).filter(Boolean))],
       ingredients: lines(F.ingredients.value), steps: lines(F.steps.value),
       nutrition: { calories: num(F.calories.value), protein: num(F.protein.value), fat: num(F.fat.value), carbs: num(F.carbs.value) },
-      notes: F.notes.value.trim(), last_cooked: F.last_cooked.value, added_at: r?.added_at
+      notes: F.notes.value.trim(), last_cooked: F.last_cooked.value, added_at: r?.added_at, lang: r?.lang || ''
     });
     delete state.servings[rec.id];
     toast('Gespeichert ✅');
@@ -1990,6 +2266,17 @@ function renderMore(app) {
       <h2>Darstellung</h2>
       <div class="seg" id="theme">
         <button data-t="auto">Automatisch</button><button data-t="light">☀️ Hell</button><button data-t="dark">🌙 Dunkel</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>📊 Koch-Statistik & ❤️ Sammlungen</h2>
+      <a class="btn block" href="#/stats">📊 Koch-Statistik ansehen</a>
+      <p class="hint">Sammlungen – tippe darauf zum Umbenennen oder Löschen. Rezepte fügst du im Rezept über „📚 Sammlungen“ hinzu.</p>
+      <div class="chips-wrap">
+        <span class="chip" style="cursor:default">❤️ Favoriten <span class="hint">${state.recipes.filter(r => isFav(r.id)).length}</span></span>
+        ${collections().map(c => `<button class="chip" data-coll-edit="${c.id}">📚 ${esc(c.name)} <span class="hint">${c.ids.filter(x => byId(x)).length}</span></button>`).join('')}
+        <button class="chip" id="newColl">＋ Neue Sammlung</button>
       </div>
     </section>
 
@@ -2084,6 +2371,19 @@ function renderMore(app) {
   $('#theme').onclick = e => { const b = e.target.closest('button'); if (!b) return; setTheme(b.dataset.t); mark(b.dataset.t); };
   $('#exp').onclick = exportBackup;
   $('#expSettings').onclick = exportSettings;
+  $('#newColl').onclick = async () => {
+    const n = prompt('Name der neuen Sammlung (z. B. Für Gäste, Schnell unter der Woche, Weihnachten):', '');
+    if (!n || !n.trim()) return;
+    state.settings.collections = [...collections(), { id: 'c' + uid(), name: n.trim(), ids: [] }];
+    await Store.set('settings', state.settings); renderMore(app); toast('Sammlung angelegt – füge Rezepte im Rezept über „📚 Sammlungen“ hinzu.', 4000);
+  };
+  $$('[data-coll-edit]', app).forEach(b => b.onclick = async () => {
+    const c = collections().find(x => x.id === b.dataset.collEdit); if (!c) return;
+    const v = await choose(`Sammlung „${c.name}“`, [{ label: '✏️ Umbenennen', value: 'rename' }, { label: '🗑 Sammlung löschen (Rezepte bleiben erhalten)', value: 'del', danger: true }]);
+    if (v === 'rename') { const n = prompt('Neuer Name:', c.name); if (n && n.trim()) c.name = n.trim(); }
+    if (v === 'del' && confirm(`Sammlung „${c.name}“ löschen?`)) state.settings.collections = collections().filter(x => x.id !== c.id);
+    if (v) { await Store.set('settings', state.settings); renderMore(app); }
+  });
   const setS = async (k, v) => { state.settings[k] = v; await Store.set('settings', state.settings); rebuild(); renderMore(app); };
   $('#autoTags').onchange = e => setS('autoTags', e.target.checked);
   $('#hideUnknown').onchange = e => setS('hideUnknownTags', e.target.checked);
