@@ -829,5 +829,52 @@
     "notes": "",
     "last_cooked": "",
     "added_at": "2026-11-15T16:04:47+00:00"
+  },
+  {
+    "id": "spaghetti-mit-veganem-spinat-pistazien-p-45f43",
+    "title": "Spaghetti mit veganem Spinat-Pistazien-Pesto",
+    "source_url": "https://www.sevencooks.com/de/rezept/veganes-pesto-mit-spinat-und-pistazien-15264",
+    "image": "images/spaghetti-mit-veganem-spinat-pistazien-p-45f43.jpg",
+    "servings": 4,
+    "prep_time": 10,
+    "cook_time": 20,
+    "difficulty": "",
+    "rating": 0,
+    "tags": [
+      "Nudeln",
+      "Pasta",
+      "Italien",
+      "Spaghetti",
+      "Blattspinat",
+      "Pistazien",
+      "Olivenöl",
+      "Hefeflocken"
+    ],
+    "ingredients": [
+      "400 g Spaghetti",
+      "250 g Blattspinat",
+      "100 g geschälte Pistazien",
+      "150 ml Olivenöl",
+      "1 EL Hefeflocken",
+      "1 TL Salz",
+      "1 Prise Pfeffer",
+      "400 g Cherrytomaten"
+    ],
+    "steps": [
+      "Die Spaghetti nach Packungsangabe zubereiten.",
+      "Blattspinat, Pistazien, Olivenöl, Hefeflocken, Salz und Pfeffer in einem Blitzhacker zu einer homogenen Masse häckseln.",
+      "Die Nudeln mit dem Pesto anrichten und mit den Cherrytomaten garnieren."
+    ],
+    "nutrition": {
+      "calories": 833,
+      "protein": 21.1,
+      "fat": 49.1,
+      "carbs": 76.9,
+      "fiber": null
+    },
+    "notes": "",
+    "last_cooked": "",
+    "added_at": "2026-11-15T17:22:41+00:00",
+    "lang": "de"
   }
 ]
