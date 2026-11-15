@@ -218,7 +218,7 @@ table.nut thead th { font-size: 13px; color: var(--muted); font-weight: 600; }
 .shop-list li.done .box::after { content: "✓"; }
 .shop-list li .txt { flex: 1; }
 .shop-list li .src { display: block; font-size: 13px; color: var(--muted); text-decoration: none; }
-.shop-list li .del { background: none; border: 0; color: var(--muted); font-size: 22px; width: 40px; height: 40px; cursor: pointer; flex: none; }
+.shop-list li .del { background: none; border: 0; color: var(--muted); font-size: 22px; width: 34px; height: 40px; cursor: pointer; flex: none; }
 
 .list-head { display: flex; align-items: center; gap: 12px; margin: 6px 0 2px; }
 .list-head h2 { flex: 1; font-size: 22px; font-weight: 800; }
@@ -230,7 +230,7 @@ table.nut thead th { font-size: 13px; color: var(--muted); font-weight: 600; }
 .shop-list.pantry { opacity: .85; border-style: dashed; }
 .chip-x { display: inline-flex; align-items: center; gap: 6px; }
 .chips-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
-.shop-list li .mini { background: var(--card-2); border: 0; border-radius: 10px; width: 40px; height: 40px; font-size: 18px; cursor: pointer; flex: none; }
+.shop-list li .mini { background: var(--card-2); border: 0; border-radius: 10px; width: 38px; height: 40px; font-size: 18px; cursor: pointer; flex: none; }
 .opt { display: block; width: 100%; text-align: left; min-height: 54px; padding: 12px 6px; background: none; border: 0; border-bottom: 1px solid var(--border); font-size: 17px; cursor: pointer; }
 .opt:last-child { border-bottom: 0; }
 .opt.on { color: var(--accent); font-weight: 700; }
@@ -266,6 +266,15 @@ table.nut thead th { font-size: 13px; color: var(--muted); font-weight: 600; }
 .set-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .stepper { display: flex; align-items: center; gap: 10px; flex: none; }
 .stepper b { min-width: 2ch; text-align: center; font-size: 20px; }
+
+/* Migros */
+.shop-list li .mini.m { background: #ff6600; color: #fff; font-weight: 900; font-size: 17px; font-family: Arial, sans-serif; }
+.prod { display: block; font-size: 14px; margin-top: 2px; text-decoration: none; color: #e05a00; font-weight: 600; }
+:root[data-theme="dark"] .prod { color: #ff9a4d; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .prod { color: #ff9a4d; } }
+.prod.none { color: var(--muted); font-weight: 400; font-style: italic; }
+.star-prod { flex: none; text-decoration: none; font-size: 20px; padding: 0 4px; }
+a.opt { color: inherit; text-decoration: none; }
 
 /* Was koche ich mit */
 .cook-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; margin: 10px 0; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 8px; }
@@ -749,7 +758,11 @@ function renderDetail(app, id) {
     const c = state.servings[id] || base, f = c / base;
     $('#sNum').textContent = c;
     $('#ingList').innerHTML = r.ingredients.length
-      ? r.ingredients.map(l => isSubHeading(l) ? `<li class="sub">${esc(l)}</li>` : `<li><span class="box"></span><span>${esc(scaleIngredient(l, f))}</span></li>`).join('')
+      ? r.ingredients.map(l => {
+          if (isSubHeading(l)) return `<li class="sub">${esc(l)}</li>`;
+          const p = productFor(parseIngredient(l).name || l);
+          return `<li><span class="box"></span><span style="flex:1">${esc(scaleIngredient(l, f))}</span>${p ? `<a class="star-prod" href="${esc(p.url)}" target="_blank" rel="noopener" title="Lieblingsprodukt: ${esc(p.name)}" aria-label="Lieblingsprodukt ${esc(p.name)} öffnen">⭐</a>` : ''}</li>`;
+        }).join('')
       : '<li class="sub muted">Keine Zutaten eingetragen.</li>';
     const n = r.nutrition || {};
     const keys = [['calories', 'Kalorien', 'kcal'], ['protein', 'Eiweiß', 'g'], ['fat', 'Fett', 'g'], ['carbs', 'Kohlenhydrate', 'g']];
@@ -766,7 +779,7 @@ function renderDetail(app, id) {
   const setServ = d => { const c = Math.max(1, Math.min(99, (state.servings[id] || base) + d)); state.servings[id] = c; update(); };
   $('#sMinus').onclick = () => setServ(-1);
   $('#sPlus').onclick = () => setServ(1);
-  $('#ingList').onclick = e => { const li = e.target.closest('li'); if (li && !li.classList.contains('sub')) li.classList.toggle('done'); };
+  $('#ingList').onclick = e => { if (e.target.closest('a')) return; const li = e.target.closest('li'); if (li && !li.classList.contains('sub')) li.classList.toggle('done'); };
   $('#stepList')?.addEventListener('click', e => { const li = e.target.closest('li'); if (li) li.classList.toggle('done'); });
   $('#rate').onclick = async e => {
     const b = e.target.closest('button'); if (!b) return;
@@ -933,7 +946,9 @@ function choose(title, options) {
   return new Promise(res => {
     const d = $('#genDlg');
     $('#genTitle').textContent = title;
-    $('#genBody').innerHTML = options.map((o, i) => `<button class="opt ${o.on ? 'on' : ''} ${o.danger ? 'danger' : ''}" data-i="${i}">${esc(o.label)}</button>`).join('');
+    $('#genBody').innerHTML = options.map((o, i) => o.href
+      ? `<a class="opt" data-i="${i}" href="${esc(o.href)}" target="_blank" rel="noopener">${esc(o.label)}</a>`
+      : `<button class="opt ${o.on ? 'on' : ''} ${o.danger ? 'danger' : ''}" data-i="${i}">${esc(o.label)}</button>`).join('');
     $('#genFoot').innerHTML = ''; $('#genFoot').hidden = true;
     let done = false;
     const finish = v => { if (done) return; done = true; d.onclick = null; d.onclose = null; if (d.open) d.close(); res(v); };
@@ -1007,9 +1022,21 @@ function renderShop(app) {
   const pantry = L.items.filter(pantryHit);
   const open = L.items.filter(i => !i.done && !pantryHit(i)), done = L.items.filter(i => i.done);
   const groups = orderedCats().map(c => ({ c, items: open.filter(i => (i.cat || 'sonstiges') === c.id) })).filter(g => g.items.length);
+  const mm = !!state.settings.migrosMode;
+  const prodLine = i => {
+    const p = productFor(i.name);
+    if (p) {
+      const packs = packsNeeded(i, p);
+      const extra = mm ? [p.size, p.price != null ? fmtCHF(p.price) : '', packs > 1 ? packs + ' Packungen' : ''].filter(Boolean).join(' · ') : '';
+      return `<a class="prod" href="${esc(p.url)}" target="_blank" rel="noopener">⭐ ${esc(p.name)}${extra ? ' · ' + esc(extra) : ''} ↗</a>`;
+    }
+    return mm && !i.done ? '<span class="prod none">kein Produkt gespeichert</span>' : '';
+  };
+  const cost = costEstimate(open);
   const item = i => `<li data-id="${i.id}" class="${i.done ? 'done' : ''}"><span class="box"></span>
-      <span class="txt">${esc(shopText(i))}${i.sources.length ? `<span class="src">${esc(i.sources.join(', '))}</span>` : ''}</span>
-      ${i.done ? '' : pantryHit(i) ? `<button class="mini" data-buy="${i.id}" aria-label="Doch kaufen" title="Doch kaufen">🛒</button>` : `<button class="mini" data-cat="${i.id}" aria-label="Abteilung ändern" title="Abteilung ändern">${catById(i.cat).icon}</button>`}
+      <span class="txt">${esc(shopText(i))}${prodLine(i)}${!mm && i.sources.length ? `<span class="src">${esc(i.sources.join(', '))}</span>` : ''}</span>
+      ${i.done ? '' : `<button class="mini m" data-m="${i.id}" aria-label="Migros-Produkt" title="Migros">M</button>`}
+      ${i.done || (mm && !pantryHit(i)) ? '' : pantryHit(i) ? `<button class="mini" data-buy="${i.id}" aria-label="Doch kaufen" title="Doch kaufen">🛒</button>` : `<button class="mini" data-cat="${i.id}" aria-label="Abteilung ändern" title="Abteilung ändern">${catById(i.cat).icon}</button>`}
       <button class="del" data-del="${i.id}" aria-label="Entfernen">✕</button></li>`;
   app.innerHTML = `
     <div class="chips" style="margin-top:10px">
@@ -1017,6 +1044,10 @@ function renderShop(app) {
       <button class="chip" data-newlist>＋ Neue Liste</button>
     </div>
     <div class="list-head"><h2>${esc(L.name)}</h2><button class="icon-btn" data-menu aria-label="Listen-Optionen">⋯</button></div>
+    <div class="chips-wrap" style="margin:2px 0 8px">
+      <button class="chip ${mm ? 'on' : ''}" data-mm aria-pressed="${mm}">🟠 Migros-Modus: ${mm ? 'an' : 'aus'}</button>
+    </div>
+    ${cost.priced ? `<div class="banner">💰 Geschätzt ca. <b>${fmtCHF(cost.sum)}</b> <span class="hint">· ${cost.priced} von ${cost.total} Artikeln mit Preis (Vorrat nicht mitgezählt)</span></div>` : ''}
     <form class="shop-add" id="shopForm">
       <label class="sr-only" for="shopIn">Artikel</label>
       <input type="text" id="shopIn" placeholder="Artikel hinzufügen, z. B. 1 l Milch" autocomplete="off">
@@ -1056,6 +1087,10 @@ function renderShop(app) {
     if (t.closest('[data-share]')) { shareList(L); return; }
     if (t.closest('[data-cleardone]')) { L.items = L.items.filter(i => !i.done); await saveShop(); renderShop(app); return; }
     if (t.closest('[data-menu]')) { listMenu(L, app); return; }
+    if (t.closest('[data-mm]')) { state.settings.migrosMode = !mm; await Store.set('settings', state.settings); renderShop(app); return; }
+    const mb = t.closest('[data-m]');
+    if (mb) { const i = L.items.find(x => x.id === mb.dataset.m); if (i) await migrosMenu(i.name, () => renderShop(app)); return; }
+    if (t.closest('a')) return; // Produktlink öffnen, Artikel nicht abhaken
     const catBtn = t.closest('[data-cat]');
     if (catBtn) {
       const i = L.items.find(x => x.id === catBtn.dataset.cat); if (!i) return;
@@ -1122,6 +1157,103 @@ $('#pickOk').addEventListener('click', async () => {
   toast(`Zutaten aus ${ids.length} Rezept${ids.length > 1 ? 'en' : ''} hinzugefügt`);
   if (location.hash === '#/shop') renderShop($('#app'));
 });
+
+/* =========================================================
+   Migros: Suche und Lieblingsprodukte
+   ========================================================= */
+const prodKey = name => cleanName(name);
+const prodLabel = name => String(name || '').replace(/\(.*?\)/g, ' ').split(',')[0].replace(/\s+/g, ' ').trim();
+const productFor = name => (state.settings.products || {})[prodKey(name)] || null;
+const migrosSearchUrl = q => 'https://www.migros.ch/de/search?query=' + encodeURIComponent(q);
+const googleMigrosUrl = q => 'https://www.google.com/search?q=' + encodeURIComponent('site:migros.ch ' + q);
+const fmtCHF = n => 'CHF ' + Number(n).toFixed(2);
+function parsePrice(s) {
+  const m = String(s || '').replace(/\s/g, '').match(/\d+(?:[.,]\d{1,2})?/);
+  return m ? parseFloat(m[0].replace(',', '.')) : null;
+}
+const COUNT_UNITS = /^(|stuck|stk|dose|dosen|bund|pck|packchen|packung|packungen|becher|glas|glaser|beutel|flasche|flaschen|netz|schale|tafel)$/;
+function packsNeeded(i, p) {
+  if (i.qty == null) return 1;
+  const sz = parseIngredient(p.size || '');
+  const sd = sz.qty ? unitDim(sz.unit) : null;
+  if (i.dim && sd && sd[0] === i.dim) return Math.max(1, Math.ceil(i.qty / (sz.qty * sd[1]) - 1e-9));
+  if (!i.dim && !sd && COUNT_UNITS.test(norm(i.unit))) return Math.max(1, Math.ceil(i.qty - 1e-9));
+  return 1;
+}
+function costEstimate(items) {
+  let sum = 0, priced = 0;
+  items.forEach(i => { const p = productFor(i.name); if (p && p.price != null) { sum += p.price * packsNeeded(i, p); priced++; } });
+  return { sum, priced, total: items.length };
+}
+
+function productForm(name) {
+  const key = prodKey(name), label = prodLabel(name);
+  return new Promise(res => {
+    const d = $('#genDlg'), p = (state.settings.products || {})[key] || {};
+    $('#genTitle').textContent = `Lieblingsprodukt für „${label}“`;
+    $('#genBody').innerHTML = `
+      <p class="hint">So geht's: Produkt bei Migros öffnen → Link kopieren (Teilen → Kopieren) → hier einfügen.</p>
+      <label class="field"><span>Link zum Produkt *</span>
+        <input type="url" id="pf-url" value="${esc(p.url || '')}" placeholder="https://www.migros.ch/de/product/…" autocapitalize="off" spellcheck="false"></label>
+      ${navigator.clipboard?.readText ? '<button type="button" class="btn small" id="pf-paste">📋 Link aus Zwischenablage einfügen</button>' : ''}
+      <label class="field"><span>Name <small>(leer = „${esc(label)}“)</small></span>
+        <input type="text" id="pf-name" value="${esc(p.name || '')}" placeholder="z. B. M-Classic Pelati gehackt"></label>
+      <div class="grid2">
+        <label class="field"><span>Packungsgrösse</span><input type="text" id="pf-size" value="${esc(p.size || '')}" placeholder="z. B. 400 g"></label>
+        <label class="field"><span>Preis (CHF)</span><input type="text" inputmode="decimal" id="pf-price" value="${p.price != null ? String(p.price.toFixed(2)) : ''}" placeholder="z. B. 0.95"></label>
+      </div>
+      <p class="hint">Mit Packungsgrösse rechnet die App aus, wie viele Packungen du brauchst (z. B. 1,2 kg Mehl bei 1-kg-Packung → 2 Packungen).</p>`;
+    $('#genFoot').hidden = false;
+    $('#genFoot').innerHTML = `${p.url ? '<button class="btn danger" data-pdel>Entfernen</button>' : '<button class="btn" data-close>Abbrechen</button>'}<button class="btn primary" data-ok>Speichern</button>`;
+    let done = false;
+    const finish = v => { if (done) return; done = true; d.onclick = null; d.onclose = null; if (d.open) d.close(); res(v); };
+    d.onclick = async e => {
+      if (e.target.closest('#pf-paste')) {
+        try {
+          const t = await navigator.clipboard.readText(), m = t.match(/https?:\/\/\S+/);
+          if (m) $('#pf-url').value = m[0]; else toast('In der Zwischenablage ist kein Link.');
+        } catch (err) { toast('Kein Zugriff – bitte lange ins Feld tippen und „Einfügen“ wählen.', 4000); }
+        return;
+      }
+      if (e.target.closest('[data-pdel]')) {
+        if (!confirm('Lieblingsprodukt entfernen?')) return;
+        const all = { ...(state.settings.products || {}) }; delete all[key];
+        state.settings.products = all; await Store.set('settings', state.settings); finish('deleted'); return;
+      }
+      if (e.target.closest('[data-ok]')) {
+        const m = $('#pf-url').value.trim().match(/https?:\/\/\S+/);
+        if (!m) { toast('Bitte den Link zum Produkt (mit https://) einfügen.', 3500); $('#pf-url').focus(); return; }
+        state.settings.products = {
+          ...(state.settings.products || {}),
+          [key]: { url: m[0], name: $('#pf-name').value.trim() || label, size: $('#pf-size').value.trim(), price: parsePrice($('#pf-price').value), updated: todayISO() }
+        };
+        await Store.set('settings', state.settings); finish('saved'); return;
+      }
+      if (e.target.closest('[data-close]') || e.target === d) finish(null);
+    };
+    d.onclose = () => { if (!d.open) finish(null); };
+    d.showModal();
+  });
+}
+
+async function migrosMenu(name, after) {
+  const label = prodLabel(name), p = productFor(name);
+  const opts = [];
+  if (p) opts.push({ label: `↗ ${p.name} öffnen`, value: 'open', href: p.url }, { label: '✏️ Lieblingsprodukt bearbeiten', value: 'edit' });
+  opts.push(
+    { label: `🔍 Bei Migros suchen: „${label}“`, value: 'search', href: migrosSearchUrl(label) },
+    { label: '🔎 Mit Google auf migros.ch suchen', value: 'google', href: googleMigrosUrl(label) },
+    { label: '✏️ Anderen Suchbegriff verwenden …', value: 'custom' }
+  );
+  if (!p) opts.push({ label: '⭐ Lieblingsprodukt speichern', value: 'edit' });
+  const v = await choose(`Migros: ${label}`, opts);
+  if (v === 'custom') {
+    const q = prompt('Wonach soll bei Migros gesucht werden?', label);
+    if (q && q.trim()) window.open(migrosSearchUrl(q.trim()), '_blank', 'noopener');
+  }
+  if (v === 'search' || v === 'google') setTimeout(() => toast('Gefunden? Link kopieren und über M → ⭐ speichern.', 4500), 600);
+  if (v === 'edit') { const r = await productForm(name); if (r === 'saved') toast('Lieblingsprodukt gespeichert ⭐'); if (r && after) after(); }
+}
 
 /* =========================================================
    Was koche ich mit …?
@@ -1811,6 +1943,18 @@ function renderMore(app) {
     </section>
 
     <section class="panel">
+      <h2>🟠 Meine Migros-Produkte</h2>
+      ${(() => {
+        const prods = Object.entries(state.settings.products || {}).sort((a, b) => a[1].name.localeCompare(b[1].name, 'de'));
+        if (!prods.length) return '<p class="hint">Noch keine gespeichert. Tippe auf der Einkaufsliste bei einem Artikel auf <b>M</b> → <b>⭐ Lieblingsprodukt speichern</b>.</p>';
+        return `<ul class="shop-list">${prods.map(([k, p]) => `<li style="cursor:default">
+          <span class="txt"><a href="${esc(p.url)}" target="_blank" rel="noopener"><b>${esc(p.name)}</b> ↗</a>
+          <span class="src">für „${esc(k)}“${p.size ? ' · ' + esc(p.size) : ''}${p.price != null ? ' · ' + fmtCHF(p.price) : ''}</span></span>
+          <button class="mini" data-pedit="${esc(k)}" aria-label="Bearbeiten">✏️</button></li>`).join('')}</ul>`;
+      })()}
+    </section>
+
+    <section class="panel">
       <h2>🧂 Vorratsschrank</h2>
       <p class="hint">Diese Zutaten hast du immer zu Hause. Auf der Einkaufsliste landen sie in der Gruppe „Vorrat prüfen“ statt bei den normalen Artikeln. Auch zusammengesetzte Wörter zählen: „Öl“ gilt z. B. auch für Olivenöl, „Brühe“ für Gemüsebrühe.</p>
       <div class="chips-wrap">${pantryList().map((p, i) => `<button class="chip chip-x" data-prem="${i}" aria-label="${esc(p)} entfernen">${esc(p)} ✕</button>`).join('') || '<span class="hint">Noch leer.</span>'}</div>
@@ -1832,6 +1976,8 @@ function renderMore(app) {
       <h2>Backup</h2>
       <p class="hint">Speichert alle Rezepte (inkl. deiner Änderungen und Fotos) als Datei <b>recipes.json</b>. Diese Datei kannst du später wieder importieren – oder auf GitHub hochladen, um deine Änderungen dauerhaft und für alle sichtbar zu machen (siehe Anleitung).</p>
       <div class="btn-row"><button class="btn primary" id="exp">⬇️ Backup exportieren</button></div>
+      <div class="btn-row" style="margin-top:0"><button class="btn" id="expSettings">⬇️ Einstellungen sichern</button></div>
+      <p class="hint" style="margin-top:-6px">„Einstellungen sichern“ speichert Migros-Produkte, Vorratsschrank, Abteilungen, Wochenplan und Einkaufslisten in einer eigenen Datei.</p>
       <label class="btn block">⬆️ Backup importieren<input type="file" id="impFile" accept=".json,application/json" hidden></label>
       <p class="hint" style="margin-top:10px">Beim Import kannst du wählen: Rezepte <b>ergänzen</b> oder alles <b>ersetzen</b>.</p>
     </section>
@@ -1862,6 +2008,8 @@ function renderMore(app) {
   mark(theme);
   $('#theme').onclick = e => { const b = e.target.closest('button'); if (!b) return; setTheme(b.dataset.t); mark(b.dataset.t); };
   $('#exp').onclick = exportBackup;
+  $('#expSettings').onclick = exportSettings;
+  $$('[data-pedit]', app).forEach(b => b.onclick = async () => { const r = await productForm(b.dataset.pedit); if (r) renderMore(app); });
   $('#planCfgBtn').onclick = openPlanSettings;
   $('#pantryForm').onsubmit = async e => {
     e.preventDefault();
@@ -1910,9 +2058,30 @@ async function exportBackup() {
   toast(`${data.length} Rezepte exportiert`);
 }
 
+async function exportSettings() {
+  const data = { type: 'rezepte-einstellungen', version: 1, exported_at: new Date().toISOString(), settings: state.settings, lists: state.lists, activeList: state.activeList, plan: state.plan };
+  const file = new File([JSON.stringify(data, null, 2)], 'rezepte-einstellungen.json', { type: 'application/json' });
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] }) && /Android|iPhone|iPad/i.test(navigator.userAgent)) { await navigator.share({ files: [file], title: file.name }); return; }
+  } catch (e) { if (e.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  toast('Einstellungen gesichert');
+}
+
 async function importBackup(file) {
   let data;
   try { data = JSON.parse(await file.text()); } catch (e) { toast('⚠️ Die Datei ist keine gültige JSON-Datei.', 4000); return; }
+  if (data && data.type === 'rezepte-einstellungen') {
+    const s = data.settings || {};
+    state.settings = { ...state.settings, ...s, products: { ...(state.settings.products || {}), ...(s.products || {}) } };
+    await Store.set('settings', state.settings);
+    if (confirm('Einstellungen übernommen ✅\n\nSollen auch die Einkaufslisten und der Wochenplan aus der Datei wiederhergestellt werden? (Die aktuellen werden dabei ersetzt.)')) {
+      if (Array.isArray(data.lists) && data.lists.length) { state.lists = data.lists; state.activeList = data.activeList || data.lists[0].id; await saveShop(); }
+      if (data.plan && typeof data.plan === 'object') { state.plan = data.plan; await savePlan(); }
+    }
+    updateShopBadge(); toast('Wiederhergestellt ✅'); renderMore($('#app')); return;
+  }
   const list = Array.isArray(data) ? data : Array.isArray(data?.recipes) ? data.recipes : null;
   if (!list) { toast('⚠️ In der Datei wurden keine Rezepte gefunden.', 4000); return; }
   const recs = list.filter(x => x && x.title).map(normalizeRecipe);
