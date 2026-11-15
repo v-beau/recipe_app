@@ -71,10 +71,10 @@ nav.bottom {
   background: var(--card); border-top: 1px solid var(--border);
   padding-bottom: env(safe-area-inset-bottom);
 }
-nav.bottom .wrap { display: grid; grid-template-columns: repeat(4, 1fr); height: var(--nav-h); padding: 0 4px; }
+nav.bottom .wrap { display: grid; grid-template-columns: repeat(5, 1fr); height: var(--nav-h); padding: 0 4px; }
 nav.bottom a {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  text-decoration: none; color: var(--muted); font-size: 13px; font-weight: 600; position: relative; border-radius: 12px;
+  text-decoration: none; color: var(--muted); font-size: 12px; font-weight: 600; position: relative; border-radius: 12px;
 }
 nav.bottom a .ico { font-size: 23px; line-height: 1; }
 nav.bottom a.active { color: var(--accent); }
@@ -237,6 +237,33 @@ table.nut thead th { font-size: 13px; color: var(--muted); font-weight: 600; }
 .order-row .icon-btn { width: 44px; height: 44px; font-size: 18px; }
 .order-row .icon-btn:disabled { opacity: .3; }
 
+/* Wochenplan */
+.plan-nav { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+.plan-title { flex: 1; text-align: center; display: flex; flex-direction: column; }
+.plan-title b { font-size: 19px; }
+.day { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 12px 10px; margin: 12px 0; box-shadow: var(--shadow); }
+.day.today { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.day.past { opacity: .72; }
+.day-h { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+.day-h b { font-size: 17px; }
+.day-h > span { color: var(--muted); font-size: 15px; }
+.day-h .day-kcal { width: 100%; font-size: 13px; }
+.entry { display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding: 8px 0; }
+.entry-main { flex: 1; display: flex; align-items: center; gap: 12px; background: none; border: 0; text-align: left; padding: 0; cursor: pointer; min-height: 56px; min-width: 0; }
+.entry.cooked .pinfo b { color: var(--muted); }
+.entry .icon-btn { width: 44px; height: 44px; }
+.pthumb { position: relative; width: 56px; height: 56px; border-radius: 12px; overflow: hidden; flex: none; background: var(--card-2); }
+.pthumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.pthumb .ph { font-size: 26px; }
+.noteic { display: flex; align-items: center; justify-content: center; font-size: 24px; }
+.pinfo { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.pinfo b { font-size: 16px; }
+.add-entry { width: 100%; min-height: 48px; border: 1.5px dashed var(--border); border-radius: 12px; background: none; color: var(--accent); font-weight: 650; cursor: pointer; margin-top: 6px; }
+.prow { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--border); padding: 10px 0; cursor: pointer; }
+.set-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.stepper { display: flex; align-items: center; gap: 10px; flex: none; }
+.stepper b { min-width: 2ch; text-align: center; font-size: 20px; }
+
 /* Dialog */
 dialog { border: 0; border-radius: 20px; padding: 0; width: min(560px, calc(100vw - 24px)); max-height: 85vh; background: var(--card); color: var(--text); box-shadow: 0 20px 60px rgba(0,0,0,.35); }
 dialog::backdrop { background: rgba(0,0,0,.45); }
@@ -274,6 +301,7 @@ dialog .dlg-foot .btn { flex: 1; }
 <nav class="bottom" aria-label="Hauptmenü">
   <div class="wrap">
     <a href="#/" data-nav="list"><span class="ico">📖</span>Rezepte</a>
+    <a href="#/plan" data-nav="plan"><span class="ico">📅</span>Woche</a>
     <a href="#/shop" data-nav="shop"><span class="ico">🛒</span>Einkaufen<span class="badge" id="shopBadge" hidden></span></a>
     <a href="#/new" data-nav="new"><span class="ico">➕</span>Neu</a>
     <a href="#/more" data-nav="more"><span class="ico">⚙️</span>Mehr</a>
@@ -284,6 +312,20 @@ dialog .dlg-foot .btn { flex: 1; }
   <div class="dlg-head"><h2 style="font-size:19px" id="pickTitle">Rezepte für die Einkaufsliste</h2><button class="icon-btn" data-close aria-label="Schließen">✕</button></div>
   <div class="dlg-body" id="pickList"></div>
   <div class="dlg-foot"><button class="btn" data-close>Abbrechen</button><button class="btn primary" id="pickOk">Zutaten hinzufügen</button></div>
+</dialog>
+
+<dialog id="planDlg">
+  <div class="dlg-head"><h2 style="font-size:19px" id="planDlgTitle"></h2><button class="icon-btn" data-close aria-label="Schließen">✕</button></div>
+  <div style="padding:10px 18px 0">
+    <div class="set-row" style="padding-top:0"><b>Portionen</b>
+      <span class="stepper"><button class="icon-btn" data-sv="-1" aria-label="Weniger">−</button><b id="planSv">2</b><button class="icon-btn" data-sv="1" aria-label="Mehr">+</button></span></div>
+    <div class="toolbar" style="margin:10px 0 4px">
+      <input type="search" id="planQ" placeholder="🔍  Suchen …" autocomplete="off" aria-label="Suchen">
+      <select id="planSort" aria-label="Sortierung"><option value="cooked">Lange nicht gekocht</option><option value="rating">Beste</option><option value="fast">Schnellste</option><option value="az">A–Z</option></select>
+    </div>
+  </div>
+  <div class="dlg-body" id="planList"></div>
+  <div class="dlg-foot"><button class="btn" data-note>📝 Notiz statt Rezept</button></div>
 </dialog>
 
 <dialog id="genDlg">
@@ -448,6 +490,7 @@ const state = {
   remote: [], remoteOk: true,
   local: { recipes: {}, deleted: [] },   // Änderungen auf diesem Gerät
   lists: [], activeList: '',
+  plan: {}, planOffset: 0,
   settings: { repo: '' },
   recipes: [],
   filter: { q: '', tags: new Set(), sort: 'new' },
@@ -529,13 +572,14 @@ function route() {
   if (state.wakeLock) { state.wakeLock.release().catch(() => {}); state.wakeLock = null; }
   const parts = (location.hash.slice(1) || '/').split('/').filter(Boolean);
   const view = parts[0] || 'list', id = parts[1] ? decodeURIComponent(parts[1]) : '';
-  const navKey = { list: 'list', r: 'list', shop: 'shop', new: 'new', edit: 'new', more: 'more' }[view] || 'list';
+  const navKey = { list: 'list', r: 'list', plan: 'plan', shop: 'shop', new: 'new', edit: 'new', more: 'more' }[view] || 'list';
   $$('nav.bottom a').forEach(a => a.classList.toggle('active', a.dataset.nav === navKey));
   const app = $('#app');
   if (view === 'r') renderDetail(app, id);
   else if (view === 'new') renderForm(app, null);
   else if (view === 'edit') renderForm(app, byId(id));
   else if (view === 'shop') renderShop(app);
+  else if (view === 'plan') renderPlan(app);
   else if (view === 'more') renderMore(app);
   else { renderList(app); requestAnimationFrame(() => window.scrollTo(0, state.listScroll)); return; }
   window.scrollTo(0, 0);
@@ -640,6 +684,7 @@ function renderDetail(app, id) {
       <div class="meta">
         <span class="star-pick" id="rate" aria-label="Bewertung">${[1, 2, 3, 4, 5].map(i => `<button data-v="${i}" class="${i <= r.rating ? 'on' : ''}" aria-label="${i} Sterne">★</button>`).join('')}</span>
         ${local ? '<span class="local-badge" title="Nur auf diesem Gerät geändert">auf diesem Gerät geändert</span>' : ''}
+        ${plannedDatesFor(id).length ? `<a class="local-badge" href="#/plan" style="text-decoration:none">📅 Geplant: ${plannedDatesFor(id).slice(0, 3).map(shortDay).join(', ')}</a>` : ''}
       </div>
       ${r.tags.length ? `<div class="tags" style="margin-top:8px">${r.tags.map(x => `<span class="tag">${esc(x)}</span>`).join('')}</div>` : ''}
     </div>
@@ -679,6 +724,7 @@ function renderDetail(app, id) {
 
     <div class="btn-row">
       <button class="btn primary" id="cooked">✅ Heute gekocht</button>
+      <button class="btn" id="planIt">📅 Einplanen</button>
       ${'wakeLock' in navigator ? '<button class="btn" id="wake">🔆 Bildschirm anlassen</button>' : ''}
     </div>
     <div class="btn-row">
@@ -716,6 +762,15 @@ function renderDetail(app, id) {
     await saveRecipe(r);
     $$('#rate button').forEach(x => x.classList.toggle('on', +x.dataset.v <= r.rating));
     toast(r.rating ? `Bewertung: ${r.rating} von 5 Sternen` : 'Bewertung entfernt');
+  };
+  $('#planIt').onclick = async () => {
+    const t = new Date();
+    const opts = Array.from({ length: 14 }, (_, i) => dISO(addDays(t, i))).map((d, i) => ({ label: (i === 0 ? 'Heute – ' : i === 1 ? 'Morgen – ' : '') + `${dayLabel(d).wd}, ${dayLabel(d).date}`, value: d }));
+    const d = await choose('An welchem Tag?', opts);
+    if (!d) return;
+    const sv = state.servings[id] || planCfg().household;
+    dayEntries(d).push({ id: uid(), recipeId: id, servings: sv, cooked: false });
+    await savePlan(); renderDetail(app, id); toast(`Für ${dayLabel(d).wd} eingeplant (${sv} Portionen) 📅`);
   };
   $('#cooked').onclick = async () => { r.last_cooked = todayISO(); await saveRecipe(r); renderDetail(app, id); toast('Als heute gekocht gespeichert 👩‍🍳'); };
   $('#toShop').onclick = async () => {
@@ -836,7 +891,7 @@ function choose(title, options) {
       if (b) finish(options[+b.dataset.i].value);
       else if (e.target.closest('[data-close]') || e.target === d) finish(null);
     };
-    d.onclose = () => finish(null);
+    d.onclose = () => { if (!d.open) finish(null); }; // verspätete close-Ereignisse eines vorherigen Dialogs ignorieren
     d.showModal();
   });
 }
@@ -1005,6 +1060,330 @@ $('#pickOk').addEventListener('click', async () => {
   toast(`Zutaten aus ${ids.length} Rezept${ids.length > 1 ? 'en' : ''} hinzugefügt`);
   if (location.hash === '#/shop') renderShop($('#app'));
 });
+
+/* =========================================================
+   Wochenplan
+   ========================================================= */
+const WD = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+const pad2 = n => String(n).padStart(2, '0');
+const dISO = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+const dParse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d, 12); };
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const planCfg = () => ({
+  household: state.settings.household || 2,
+  days: state.settings.planDays || 7,
+  perDay: state.settings.perDay || 1,
+  start: state.settings.planStart ?? 1
+});
+function periodDays(offset = state.planOffset) {
+  const c = planCfg();
+  const t = new Date(); t.setHours(12, 0, 0, 0);
+  // Bei festem Starttag und bis zu 7 Tagen wird wochenweise geblättert (z. B. immer Mo–Fr)
+  const step = c.start !== 'today' && c.days <= 7 ? 7 : c.days;
+  let start = c.start === 'today' ? t : addDays(t, -((t.getDay() - c.start + 7) % 7));
+  if (addDays(start, c.days - 1) < t) start = addDays(start, step); // aktueller Zeitraum schon vorbei → nächsten zeigen
+  start = addDays(start, offset * step);
+  return Array.from({ length: c.days }, (_, i) => dISO(addDays(start, i)));
+}
+function isoWeek(d) {
+  const x = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = x.getUTCDay() || 7; x.setUTCDate(x.getUTCDate() + 4 - day);
+  return Math.ceil(((x - new Date(Date.UTC(x.getUTCFullYear(), 0, 1))) / 864e5 + 1) / 7);
+}
+function periodTitle(days) {
+  const a = dParse(days[0]), b = dParse(days[days.length - 1]);
+  if (days.length === 1) return a.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
+  if (a.getMonth() === b.getMonth()) return `${a.getDate()}.–${b.getDate()}. ${b.toLocaleDateString('de-DE', { month: 'long' })}`;
+  const s = d => d.toLocaleDateString('de-DE', { day: 'numeric', month: 'short' });
+  return `${s(a)} – ${s(b)}`;
+}
+const dayLabel = iso => { const d = dParse(iso); return { wd: WD[d.getDay()], date: `${d.getDate()}.${d.getMonth() + 1}.` }; };
+const shortDay = iso => { const d = dParse(iso); return WD[d.getDay()].slice(0, 2) + ' ' + d.getDate() + '.' + (d.getMonth() + 1) + '.'; };
+const dayEntries = iso => state.plan[iso] || (state.plan[iso] = []);
+async function savePlan() {
+  for (const k of Object.keys(state.plan)) if (!state.plan[k].length) delete state.plan[k];
+  await Store.set('plan', state.plan);
+}
+function plannedDatesFor(rid) {
+  const today = dISO(new Date());
+  return Object.keys(state.plan).filter(k => k >= today && state.plan[k].some(e => e.recipeId === rid)).sort();
+}
+
+/* Rezept-Auswahl für den Plan */
+function pickForPlan(title, servings) {
+  return new Promise(res => {
+    const d = $('#planDlg');
+    let sv = servings;
+    const inPeriod = new Set(periodDays().flatMap(k => (state.plan[k] || []).map(e => e.recipeId)));
+    $('#planDlgTitle').textContent = title; $('#planSv').textContent = sv; $('#planQ').value = '';
+    const draw = () => {
+      const q = norm($('#planQ').value).split(/\s+/).filter(Boolean), s = $('#planSort').value;
+      const list = state.recipes.filter(r => { const hay = norm(r.title + ' ' + r.tags.join(' ') + ' ' + r.ingredients.join(' ')); return q.every(t => hay.includes(t)); });
+      list.sort((a, b) => s === 'az' ? a.title.localeCompare(b.title, 'de')
+        : s === 'rating' ? (b.rating - a.rating) || a.title.localeCompare(b.title, 'de')
+        : s === 'fast' ? (totalTime(a) || 1e9) - (totalTime(b) || 1e9)
+        : (a.last_cooked || '').localeCompare(b.last_cooked || '') || a.title.localeCompare(b.title, 'de'));
+      $('#planList').innerHTML = list.length ? list.map(r => `<button class="prow" data-rid="${esc(r.id)}">
+          <span class="pthumb">${imageHtml(r)}</span>
+          <span class="pinfo"><b>${esc(r.title)}</b>
+            <span class="hint">${[totalTime(r) ? '⏱ ' + fmtMin(totalTime(r)) : '', r.rating ? starsText(r.rating) : '', r.last_cooked ? 'zuletzt ' + fmtDate(r.last_cooked) : 'noch nie gekocht'].filter(Boolean).join(' · ')}</span>
+            ${inPeriod.has(r.id) ? '<span><span class="local-badge">schon eingeplant</span></span>' : ''}</span></button>`).join('')
+        : '<p class="muted">Keine passenden Rezepte.</p>';
+    };
+    let done = false;
+    const finish = v => { if (done) return; done = true; d.onclick = null; d.onclose = null; if (d.open) d.close(); res(v); };
+    $('#planQ').oninput = draw; $('#planSort').onchange = draw;
+    d.onclick = e => {
+      const sb = e.target.closest('[data-sv]');
+      if (sb) { sv = Math.max(1, Math.min(99, sv + +sb.dataset.sv)); $('#planSv').textContent = sv; return; }
+      const row = e.target.closest('[data-rid]');
+      if (row) { finish({ recipeId: row.dataset.rid, servings: sv }); return; }
+      if (e.target.closest('[data-note]')) {
+        const t = prompt('Notiz für diesen Tag (z. B. Resten, Auswärts essen, Pizza bestellen):', '');
+        if (t && t.trim()) finish({ note: t.trim() });
+        return;
+      }
+      if (e.target.closest('[data-close]') || e.target === d) finish(null);
+    };
+    d.onclose = () => { if (!d.open) finish(null); }; // verspätete close-Ereignisse eines vorherigen Dialogs ignorieren
+    draw(); d.showModal();
+  });
+}
+
+function entryHtml(iso, e) {
+  const menu = `<button class="icon-btn" data-emenu="${iso}|${e.id}" aria-label="Optionen">⋯</button>`;
+  if (e.note) return `<div class="entry"><span class="pthumb noteic">📝</span><span class="pinfo"><b>${esc(e.note)}</b></span>${menu}</div>`;
+  const r = byId(e.recipeId);
+  if (!r) return `<div class="entry"><span class="pinfo"><b class="muted">Rezept nicht mehr vorhanden</b></span>${menu}</div>`;
+  return `<div class="entry ${e.cooked ? 'cooked' : ''}">
+    <button class="entry-main" data-open="${iso}|${e.id}"><span class="pthumb">${imageHtml(r)}</span>
+      <span class="pinfo"><b>${esc(r.title)}</b><span class="hint">${e.servings} ${e.servings === 1 ? 'Portion' : 'Portionen'}${totalTime(r) ? ' · ⏱ ' + fmtMin(totalTime(r)) : ''}${e.cooked ? ' · ✅ gekocht' : ''}</span></span></button>${menu}</div>`;
+}
+function dayHtml(iso, today) {
+  const { wd, date } = dayLabel(iso), es = state.plan[iso] || [];
+  let kcal = 0, prot = 0, has = false;
+  es.forEach(e => { const r = e.recipeId && byId(e.recipeId); if (r && r.nutrition.calories) { kcal += r.nutrition.calories; prot += r.nutrition.protein || 0; has = true; } });
+  return `<section class="day ${iso === today ? 'today' : ''} ${iso < today ? 'past' : ''}">
+    <div class="day-h"><b>${wd}</b><span>${date}</span>${iso === today ? '<span class="local-badge">heute</span>' : ''}
+      ${has ? `<span class="day-kcal">≈ ${Math.round(kcal)} kcal · ${Math.round(prot)} g Eiweiß pro Person</span>` : ''}</div>
+    ${es.map(e => entryHtml(iso, e)).join('')}
+    <button class="add-entry" data-add="${iso}">＋ Rezept oder Notiz</button>
+  </section>`;
+}
+
+function renderPlan(app) {
+  $('#pageTitle').textContent = 'Wochenplan';
+  const days = periodDays(), today = dISO(new Date()), c = planCfg();
+  const count = days.reduce((s, d) => s + (state.plan[d] || []).filter(e => e.recipeId).length, 0);
+  app.innerHTML = `
+    <div class="plan-nav">
+      <button class="icon-btn" data-navp="-1" aria-label="Zurück">‹</button>
+      <div class="plan-title"><b>${periodTitle(days)}</b>
+        <span class="hint">${c.days === 7 ? 'KW ' + isoWeek(dParse(days[0])) + ' · ' : ''}${c.household} ${c.household === 1 ? 'Person' : 'Personen'} · ${count} ${count === 1 ? 'Rezept' : 'Rezepte'}</span></div>
+      <button class="icon-btn" data-navp="1" aria-label="Weiter">›</button>
+    </div>
+    <div class="btn-row" style="margin:10px 0 0">
+      ${state.planOffset ? '<button class="btn small" data-today>📍 Heute</button>' : ''}
+      <button class="btn small" data-plancfg>⚙️ Einstellungen</button>
+    </div>
+    ${days.map(iso => dayHtml(iso, today)).join('')}
+    <div class="btn-row"><button class="btn primary block" data-planshop>🛒 Zutaten einkaufen</button></div>
+    <div class="btn-row">
+      <button class="btn" data-fill>🎲 Leere Tage füllen</button>
+      <button class="btn" data-copyprev>📋 Vorherige übernehmen</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn" data-planshare>📤 Plan teilen</button>
+      <button class="btn danger" data-planclear>🧹 Plan leeren</button>
+    </div>`;
+
+  app.onclick = async e => {
+    if (location.hash !== '#/plan') return;
+    const t = e.target;
+    const nv = t.closest('[data-navp]');
+    if (nv) { state.planOffset += +nv.dataset.navp; renderPlan(app); return; }
+    if (t.closest('[data-today]')) { state.planOffset = 0; renderPlan(app); return; }
+    if (t.closest('[data-plancfg]')) { openPlanSettings(); return; }
+    const add = t.closest('[data-add]');
+    if (add) {
+      const iso = add.dataset.add, l = dayLabel(iso);
+      const v = await pickForPlan(`${l.wd}, ${l.date}`, planCfg().household);
+      if (!v) return;
+      dayEntries(iso).push({ id: uid(), ...v, cooked: false });
+      await savePlan(); renderPlan(app); return;
+    }
+    const op = t.closest('[data-open]');
+    if (op) {
+      const [iso, id] = op.dataset.open.split('|');
+      const en = (state.plan[iso] || []).find(x => x.id === id);
+      if (en) { state.servings[en.recipeId] = en.servings; location.hash = '#/r/' + encodeURIComponent(en.recipeId); }
+      return;
+    }
+    const m = t.closest('[data-emenu]');
+    if (m) { const [iso, id] = m.dataset.emenu.split('|'); await entryMenu(iso, id); if (location.hash === '#/plan') renderPlan(app); return; }
+    if (t.closest('[data-planshop]')) { planToShop(); return; }
+    if (t.closest('[data-fill]')) { await fillPlan(); renderPlan(app); return; }
+    if (t.closest('[data-copyprev]')) { await copyPrevious(); renderPlan(app); return; }
+    if (t.closest('[data-planshare]')) { sharePlan(); return; }
+    if (t.closest('[data-planclear]')) {
+      if (!confirm('Alle Einträge in diesem Zeitraum löschen?')) return;
+      days.forEach(d => delete state.plan[d]); await savePlan(); renderPlan(app); toast('Plan geleert');
+    }
+  };
+}
+
+async function entryMenu(iso, id) {
+  const es = state.plan[iso] || [], en = es.find(x => x.id === id);
+  if (!en) return;
+  const r = en.recipeId && byId(en.recipeId);
+  const opts = [];
+  if (r) opts.push({ label: '📖 Rezept öffnen', value: 'open' }, { label: `👥 Portionen ändern (${en.servings})`, value: 'serv' },
+    { label: en.cooked ? '↩️ Doch nicht gekocht' : '✅ Als gekocht markieren', value: 'cooked' });
+  if (en.note) opts.push({ label: '✏️ Notiz bearbeiten', value: 'edit' });
+  opts.push({ label: '🔄 Durch anderes Rezept ersetzen', value: 'replace' }, { label: '📅 Auf anderen Tag verschieben', value: 'move' },
+    { label: '🗑 Entfernen', value: 'del', danger: true });
+  const v = await choose(r ? r.title : en.note || 'Eintrag', opts);
+  if (!v) return;
+  if (v === 'open') { state.servings[r.id] = en.servings; location.hash = '#/r/' + encodeURIComponent(r.id); return; }
+  if (v === 'serv') { const n = parseInt(prompt('Wie viele Portionen?', en.servings), 10); if (n > 0 && n < 100) en.servings = n; }
+  if (v === 'cooked') {
+    en.cooked = !en.cooked;
+    if (en.cooked && (!r.last_cooked || r.last_cooked < iso)) { r.last_cooked = iso; await saveRecipe(r); }
+    if (en.cooked) toast('Als gekocht gespeichert 👩‍🍳');
+  }
+  if (v === 'edit') { const t = prompt('Notiz:', en.note); if (t && t.trim()) en.note = t.trim(); }
+  if (v === 'replace') {
+    const p = await pickForPlan('Ersetzen durch …', en.servings || planCfg().household);
+    if (p) { delete en.note; delete en.recipeId; delete en.servings; Object.assign(en, p, { cooked: false }); }
+  }
+  if (v === 'move') {
+    const targets = [...periodDays(), ...periodDays(state.planOffset + 1)].filter(d => d !== iso);
+    const tgt = await choose('Verschieben auf …', targets.map(d => ({ label: `${dayLabel(d).wd}, ${dayLabel(d).date}`, value: d })));
+    if (tgt) { state.plan[iso] = es.filter(x => x !== en); dayEntries(tgt).push(en); toast(`Verschoben auf ${dayLabel(tgt).wd}`); }
+  }
+  if (v === 'del') state.plan[iso] = es.filter(x => x !== en);
+  await savePlan();
+}
+
+async function fillPlan() {
+  if (!state.recipes.length) { toast('Noch keine Rezepte vorhanden.'); return; }
+  const c = planCfg(), today = dISO(new Date()), now = new Date();
+  const days = periodDays().filter(d => d >= today);
+  const planned = new Set(periodDays().flatMap(d => (state.plan[d] || []).map(e => e.recipeId).filter(Boolean)));
+  let added = 0, prevTags = [];
+  for (const d of days) {
+    const need = c.perDay - (state.plan[d] || []).length;
+    for (let k = 0; k < need; k++) {
+      let pool = state.recipes.filter(r => !planned.has(r.id));
+      if (!pool.length) pool = [...state.recipes];
+      const scored = pool.map(r => {
+        const since = r.last_cooked ? (now - dParse(r.last_cooked)) / 864e5 : 45;
+        return [r, Math.min(since, 60) + r.rating * 4 + Math.random() * 30 - (r.tags.some(t => prevTags.includes(t)) ? 15 : 0)];
+      }).sort((a, b) => b[1] - a[1]);
+      const r = scored[0][0];
+      dayEntries(d).push({ id: uid(), recipeId: r.id, servings: c.household, cooked: false });
+      planned.add(r.id); prevTags = r.tags; added++;
+    }
+  }
+  await savePlan();
+  toast(added ? `${added} ${added === 1 ? 'Rezept' : 'Rezepte'} vorgeschlagen – über ⋯ kannst du einzelne ersetzen` : 'Alle Tage sind schon geplant.', 4000);
+}
+
+async function copyPrevious() {
+  const days = periodDays(), prev = periodDays(state.planOffset - 1);
+  let n = 0;
+  days.forEach((d, i) => {
+    const src = state.plan[prev[i]] || [];
+    if (!src.length || (state.plan[d] || []).length) return;
+    state.plan[d] = src.map(e => ({ ...e, id: uid(), cooked: false })); n++;
+  });
+  await savePlan();
+  toast(n ? `${n} ${n === 1 ? 'Tag' : 'Tage'} übernommen` : 'Nichts übernommen – die Tage sind schon belegt oder der vorherige Zeitraum ist leer.', 4000);
+}
+
+async function sharePlan() {
+  const days = periodDays();
+  const lines = days.map(d => {
+    const es = (state.plan[d] || []).map(e => e.note ? e.note : (byId(e.recipeId)?.title || '?') + ` (${e.servings} P.)`);
+    return `${shortDay(d)}: ${es.length ? es.join(', ') : '–'}`;
+  });
+  const text = `📅 Wochenplan ${periodTitle(days)}\n\n` + lines.join('\n');
+  try { if (navigator.share) { await navigator.share({ title: 'Wochenplan', text }); return; } } catch (e) { if (e.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(text); toast('Plan kopiert 📋'); } catch (e) { prompt('Plan zum Kopieren:', text); }
+}
+
+function chooseDays(days) {
+  return new Promise(res => {
+    const d = $('#genDlg');
+    $('#genTitle').textContent = 'Für welche Tage einkaufen?';
+    $('#genBody').innerHTML = days.map(iso => `<label class="pick"><input type="checkbox" value="${iso}" checked>
+      <span><b>${dayLabel(iso).wd}, ${dayLabel(iso).date}</b><br><span class="hint">${state.plan[iso].filter(e => e.recipeId && byId(e.recipeId)).map(e => esc(byId(e.recipeId).title)).join(', ')}</span></span></label>`).join('');
+    $('#genFoot').hidden = false;
+    $('#genFoot').innerHTML = '<button class="btn" data-close>Abbrechen</button><button class="btn primary" data-ok>Weiter</button>';
+    let done = false;
+    const finish = v => { if (done) return; done = true; d.onclick = null; d.onclose = null; if (d.open) d.close(); res(v); };
+    d.onclick = e => {
+      if (e.target.closest('[data-ok]')) finish($$('#genBody input:checked').map(i => i.value));
+      else if (e.target.closest('[data-close]') || e.target === d) finish(null);
+    };
+    d.onclose = () => { if (!d.open) finish(null); }; // verspätete close-Ereignisse eines vorherigen Dialogs ignorieren
+    d.showModal();
+  });
+}
+
+async function planToShop() {
+  const days = periodDays().filter(d => (state.plan[d] || []).some(e => e.recipeId && byId(e.recipeId)));
+  if (!days.length) { toast('In diesem Zeitraum sind noch keine Rezepte geplant.'); return; }
+  const sel = await chooseDays(days);
+  if (!sel || !sel.length) return;
+  const def = 'Wochenplan ' + periodTitle(periodDays());
+  const v = await choose('Auf welche Einkaufsliste?', [
+    { label: `＋ Neue Liste „${def}“`, value: '__new' },
+    ...state.lists.map(l => ({ label: l.name, value: l.id }))
+  ]);
+  if (!v) return;
+  const L = v === '__new' ? createList(def) : state.lists.find(l => l.id === v);
+  let n = 0;
+  sel.forEach(d => state.plan[d].forEach(e => { const r = e.recipeId && byId(e.recipeId); if (r) { addToShop(L, r, e.servings); n++; } }));
+  state.activeList = L.id; await saveShop();
+  toast(`Zutaten aus ${n} ${n === 1 ? 'Rezept' : 'Rezepten'} auf „${L.name}“ 🛒`, 3500);
+  location.hash = '#/shop';
+}
+
+function openPlanSettings() {
+  const d = $('#genDlg'), c = planCfg();
+  const v = { household: c.household, days: c.days, perDay: c.perDay };
+  const row = (k, title, hint) => `<div class="set-row"><span><b>${title}</b><br><span class="hint">${hint}</span></span>
+    <span class="stepper"><button class="icon-btn" data-st="${k}|-1" aria-label="Weniger">−</button><b id="st-${k}">${v[k]}</b><button class="icon-btn" data-st="${k}|1" aria-label="Mehr">+</button></span></div>`;
+  $('#genTitle').textContent = 'Wochenplan-Einstellungen';
+  $('#genBody').innerHTML = `
+    ${row('household', 'Haushaltsgrösse', 'Standard-Portionen für jedes geplante Rezept')}
+    ${row('days', 'Anzahl Tage', 'So viele Tage umfasst ein Plan (1–14)')}
+    ${row('perDay', 'Rezepte pro Tag', 'So viele schlägt „🎲 Leere Tage füllen“ pro Tag vor. Von Hand kannst du beliebig viele eintragen.')}
+    <label class="field"><span>Plan beginnt am</span><select id="st-start">
+      ${[1, 2, 3, 4, 5, 6, 0].map(i => `<option value="${i}" ${c.start === i ? 'selected' : ''}>${WD[i]}</option>`).join('')}
+      <option value="today" ${c.start === 'today' ? 'selected' : ''}>Heute (immer ab dem aktuellen Tag)</option></select></label>`;
+  $('#genFoot').hidden = false;
+  $('#genFoot').innerHTML = '<button class="btn" data-close>Abbrechen</button><button class="btn primary" data-ok>Speichern</button>';
+  const max = { household: 20, days: 14, perDay: 5 };
+  const close = () => { d.onclick = null; d.onclose = null; if (d.open) d.close(); };
+  d.onclose = null;
+  d.onclick = async e => {
+    const st = e.target.closest('[data-st]');
+    if (st) { const [k, dl] = st.dataset.st.split('|'); v[k] = Math.max(1, Math.min(max[k], v[k] + +dl)); $('#st-' + k).textContent = v[k]; return; }
+    if (e.target.closest('[data-ok]')) {
+      const s = $('#st-start').value;
+      Object.assign(state.settings, { household: v.household, planDays: v.days, perDay: v.perDay, planStart: s === 'today' ? 'today' : +s });
+      await Store.set('settings', state.settings); close(); state.planOffset = 0; toast('Einstellungen gespeichert');
+      if (location.hash === '#/plan') renderPlan($('#app'));
+      if (location.hash === '#/more') renderMore($('#app'));
+      return;
+    }
+    if (e.target.closest('[data-close]') || e.target === d) close();
+  };
+  d.showModal();
+}
 
 /* =========================================================
    Formular: Neu / Bearbeiten
@@ -1270,6 +1649,12 @@ function renderMore(app) {
     </section>
 
     <section class="panel">
+      <h2>Wochenplan</h2>
+      <p class="hint">Haushaltsgrösse: ${planCfg().household} · Tage: ${planCfg().days} · Rezepte pro Tag: ${planCfg().perDay} · Beginn: ${planCfg().start === 'today' ? 'heute' : WD[planCfg().start]}</p>
+      <button class="btn block" id="planCfgBtn">⚙️ Wochenplan-Einstellungen</button>
+    </section>
+
+    <section class="panel">
       <h2>Backup</h2>
       <p class="hint">Speichert alle Rezepte (inkl. deiner Änderungen und Fotos) als Datei <b>recipes.json</b>. Diese Datei kannst du später wieder importieren – oder auf GitHub hochladen, um deine Änderungen dauerhaft und für alle sichtbar zu machen (siehe Anleitung).</p>
       <div class="btn-row"><button class="btn primary" id="exp">⬇️ Backup exportieren</button></div>
@@ -1303,6 +1688,7 @@ function renderMore(app) {
   mark(theme);
   $('#theme').onclick = e => { const b = e.target.closest('button'); if (!b) return; setTheme(b.dataset.t); mark(b.dataset.t); };
   $('#exp').onclick = exportBackup;
+  $('#planCfgBtn').onclick = openPlanSettings;
   $('#impFile').onchange = e => { const f = e.target.files[0]; if (f) importBackup(f); e.target.value = ''; };
   $('#repo').onchange = async e => { state.settings.repo = e.target.value.trim(); await Store.set('settings', state.settings); toast('Gespeichert'); };
   $('#resetLocal')?.addEventListener('click', async () => {
@@ -1362,7 +1748,8 @@ async function importBackup(file) {
    ========================================================= */
 async function init() {
   updateThemeColor();
-  const [local, lists, oldShop, settings] = await Promise.all([Store.get('local'), Store.get('lists'), Store.get('shop'), Store.get('settings')]);
+  const [local, lists, oldShop, settings, plan] = await Promise.all([Store.get('local'), Store.get('lists'), Store.get('shop'), Store.get('settings'), Store.get('plan')]);
+  if (plan && typeof plan === 'object') state.plan = plan;
   if (local && local.recipes) state.local = { recipes: local.recipes, deleted: local.deleted || [] };
   if (settings) state.settings = { ...state.settings, ...settings };
   if (lists && Array.isArray(lists.lists) && lists.lists.length) { state.lists = lists.lists; state.activeList = lists.active; }
