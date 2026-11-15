@@ -300,5 +300,58 @@
     "notes": "",
     "last_cooked": "",
     "added_at": "2026-11-15T14:46:02+00:00"
+  },
+  {
+    "id": "veganer-linseneintopf-mit-wurstchen-cf457",
+    "title": "Veganer Linseneintopf mit Würstchen",
+    "source_url": "https://www.zuckerjagdwurst.com/de/rezepte/veganer-linseneintopf",
+    "image": "images/veganer-linseneintopf-mit-wurstchen-cf457.jpg",
+    "servings": 4,
+    "prep_time": 0,
+    "cook_time": 50,
+    "difficulty": "",
+    "rating": 0,
+    "tags": [
+      "Vegane glutenfreie Rezepte",
+      "Vegane Hauptgerichte",
+      "Vegane Hausmannskost",
+      "Vegane Rezepte mit Linsen",
+      "Vegane Rezepte mit Kartoffeln"
+    ],
+    "ingredients": [
+      "Für den Linseneintopf:",
+      "1 Zwiebel",
+      "1 Knoblauchzehe",
+      "220 g Karotten",
+      "1 Pastinake",
+      "200 g Tellerlinsen",
+      "400 g Süßkartoffeln",
+      "1 Lauch",
+      "3 EL vegane Butter",
+      "2 l Gemüsebrühe",
+      "200 g vegane Würstchen",
+      "20 g Petersilie",
+      "2 EL Rotweinessig",
+      "Salz",
+      "Pfeffer",
+      "Muskat",
+      "Zum Servieren:",
+      "vegane Crème fraîche (optional)"
+    ],
+    "steps": [
+      "Zwiebel, Knoblauch, Karotten und Pastinake schälen und in kleine Würfel schneiden. Linsen waschen, Süßkartoffeln in mundgerechte Stücke und Lauch in Halbringe schneiden.",
+      "Vegane Butter in einem Topf erhitzen und die Zwiebelwürfel circa 5 Minuten darin anschwitzen, bis sie glasig sind. Den Knoblauch und das restliche Gemüse hinzugeben und für 5 Minuten anbraten, bis es leicht gebräunt ist.",
+      "Die Linsen dazugeben und mit Gemüsebrühe ablöschen. Circa 30 Minuten köcheln lassen, bis die Linsen gar sind. Dann nach Geschmack mit Salz, Pfeffer und Muskat würzen. Circa 5 Minuten bevor der Eintopf fertig ist, die veganen Würstchen in Scheiben schneiden und zum Eintopf geben.",
+      "Petersilie hacken und unterrühren. Den Eintopf mit Essig abschmecken und veganer Crème fraîche servieren."
+    ],
+    "nutrition": {
+      "calories": null,
+      "protein": null,
+      "fat": null,
+      "carbs": null
+    },
+    "notes": "",
+    "last_cooked": "",
+    "added_at": "2026-11-15T14:46:38+00:00"
   }
 ]
