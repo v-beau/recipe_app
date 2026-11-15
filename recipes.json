@@ -510,5 +510,49 @@
     "notes": "",
     "last_cooked": "",
     "added_at": "2026-11-15T14:52:44+00:00"
+  },
+  {
+    "id": "pasta-mit-grunem-basilikum-cashew-pesto-3ed9d",
+    "title": "Pasta mit grünem Basilikum-Cashew-Pesto",
+    "source_url": "https://www.zuckerjagdwurst.com/de/rezepte/pasta-mit-gruenem-basilikum-cashew-pesto",
+    "image": "images/pasta-mit-grunem-basilikum-cashew-pesto-3ed9d.jpg",
+    "servings": 2,
+    "prep_time": 0,
+    "cook_time": 20,
+    "difficulty": "",
+    "rating": 0,
+    "tags": [
+      "Vegane Pasta-Rezepte",
+      "Vegane 20-Minuten-Rezepte"
+    ],
+    "ingredients": [
+      "250 g Pasta",
+      "100 g Cashewnüsse",
+      "2 Knoblauchzehen",
+      "20 g Basilikum",
+      "10 g Petersilie",
+      "5 EL Olivenöl",
+      "1 EL Sojasoße",
+      "3 EL Tahin",
+      "0.5 Limette",
+      "veganer Parmesan",
+      "Salz",
+      "Pfeffer"
+    ],
+    "steps": [
+      "Gesalzenes Wasser in einem Topf zum Kochen bringen und die Nudeln darin nach Packungsanleitung al dente kochen. Vor dem Abgießen etwas vom Kochwasser abschöpfen und beiseitestellen.",
+      "Cashewkerne in einer Pfanne ohne Öl rösten, bis sie gut duften und leicht braun werden. Knoblauchzehen schälen und Kräuter waschen und trocken schütteln.",
+      "In einem Mixer Cashewkerne, Knoblauch, Basilikum, Petersilie, Olivenöl, Sojasoße, Tahin, Limettensaft, Salz und Pfeffer mixen, bis ein cremiges Pesto entsteht.",
+      "In dem Kochtopf der Pasta oder einer großen Schüssel die gekochten Nudeln mit dem Pesto und ggf. Nudelwasser vermischen, bis alles vermengt ist. Mit Salz, Pfeffer und Limettensaft abschmecken und mit veganem Parmesan servieren."
+    ],
+    "nutrition": {
+      "calories": null,
+      "protein": null,
+      "fat": null,
+      "carbs": null
+    },
+    "notes": "",
+    "last_cooked": "",
+    "added_at": "2026-11-15T15:03:44+00:00"
   }
 ]
