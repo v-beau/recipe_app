@@ -542,12 +542,54 @@ function normalizeRecipe(r) {
   };
 }
 
+/* Tags vereinheitlichen: "Vegane Hauptgerichte" → "Vegan" + "Hauptgericht" */
+const TAG_RULES = [
+  [/vegan/, 'Vegan'], [/vegetari/, 'Vegetarisch'],
+  [/hauptgericht|hauptspeise|hauptgang|main ?(course|dish)|abendessen|mittagessen|dinner|lunch/, 'Hauptgericht'],
+  [/vorspeise|starter|appetizer|antipast/, 'Vorspeise'],
+  [/dessert|nachspeise|nachtisch|sussspeise/, 'Dessert'], [/\bsuss(e|es|er)?\b/, 'Süss'],
+  [/fruhstuck|breakfast|brunch|zmorge/, 'Frühstück'],
+  [/salat|salad/, 'Salat'], [/suppe|soup|eintopf|stew/, 'Suppe & Eintopf'], [/beilage|side dish/, 'Beilage'],
+  [/snack|fingerfood|apero|aperitif/, 'Snack & Apéro'], [/kuchen|torte|geback|backen|cake|cookie|kekse|guetzli|muffin/, 'Backen'],
+  [/\bbrot|bread|brotchen|zopf/, 'Brot'],
+  [/schnell|quick|express|blitz|unter \d+ min|in \d+ min|\d+ min/, 'Schnell'],
+  [/einfach|easy|simpel|unkompliziert/, 'Einfach'], [/glutenfrei|gluten.?free/, 'Glutenfrei'],
+  [/proteinreich|high protein|eiweissreich|protein/, 'Proteinreich'], [/meal ?prep/, 'Meal Prep'],
+  [/bowl/, 'Bowl'], [/curry|dal\b|dhal/, 'Curry'], [/pasta|nudel|spaghetti|lasagne/, 'Pasta'], [/pizza|flammkuchen/, 'Pizza'],
+  [/burger/, 'Burger'], [/sauce|sosse|\bdip|dressing|pesto|aufstrich/, 'Saucen & Dips'], [/getrank|drink|smoothie/, 'Getränke'],
+  [/indisch|indian/, 'Indisch'], [/italien|italian/, 'Italienisch'],
+  [/asiatisch|asian|thai|japan|chines|korean|vietnam/, 'Asiatisch'], [/mexikan|mexican|tex.?mex/, 'Mexikanisch'],
+  [/orientalisch|arabisch|libanes|turkisch|nahost|middle east|levant/, 'Orientalisch'], [/griechisch|greek|mediterran/, 'Mediterran'],
+  [/schweiz|swiss/, 'Schweiz'], [/weihnacht|christmas|advent/, 'Weihnachten'], [/ostern|easter/, 'Ostern'],
+  [/fruhling|spring/, 'Frühling'], [/sommer|summer/, 'Sommer'], [/herbst|autumn/, 'Herbst'], [/winter/, 'Winter'],
+  [/grill|bbq|barbecue/, 'Grillieren'], [/kinder|kids/, 'Kinder'], [/ofen|oven|blech/, 'Ofen'], [/one.?pot/, 'One Pot']
+];
+const TAG_DROP = /^(rezepte?|recipes?|alle rezepte|food|essen|kochen|blog|neu|new|featured|zuckerjagdwurst)$/;
+function harmonizeTags(tags) {
+  const map = state.settings.tagMap || {}, auto = state.settings.autoTags !== false, hideUnknown = !!state.settings.hideUnknownTags;
+  const out = [], add = t => { t = String(t).trim(); if (t && !out.some(x => norm(x) === norm(t))) out.push(t); };
+  const viaMap = t => String(map[norm(t)]).split(',').map(x => x.trim()).filter(Boolean);
+  const first = [];
+  for (const raw of tags || []) {
+    const t = String(raw).trim(); if (!t) continue;
+    const n = norm(t);
+    if (map[n] !== undefined) { viaMap(t).forEach(x => first.push(x)); continue; }
+    if (!auto) { first.push(t); continue; }
+    if (TAG_DROP.test(n)) continue;
+    const hits = TAG_RULES.filter(([re]) => re.test(n)).map(([, c]) => c);
+    if (hits.length) first.push(...hits);
+    else if (!hideUnknown) first.push(t.charAt(0).toUpperCase() + t.slice(1));
+  }
+  first.forEach(t => (map[norm(t)] !== undefined ? viaMap(t) : [t]).forEach(add));
+  return out;
+}
+
 function rebuild() {
   const map = new Map();
   const del = new Set(state.local.deleted);
   for (const r of state.remote) if (!del.has(r.id)) map.set(r.id, r);
   for (const [id, r] of Object.entries(state.local.recipes)) map.set(id, r);
-  state.recipes = [...map.values()];
+  state.recipes = [...map.values()].map(r => ({ ...r, tags: harmonizeTags(r.tags) }));
   $('#headCount').textContent = state.recipes.length ? state.recipes.length + ' Rezepte' : '';
   updateShopBadge();
 }
@@ -848,13 +890,22 @@ const CAT_RULES = [
   ['gewuerze', /bruhe|bouillon|\bfond\b|salz|\bpfeffer\b|\bol\b|olivenol|rapsol|sonnenblumenol|sesamol|kokosol|bratol|essig|balsamico|\bsenf\b|ketchup|mayonnaise|\bmayo\b|sojasauce|sojasosse|tamari|fischsauce|worcester|sambal|sriracha|tahin|curry|kurkuma|paprikapulver|edelsusspaprika|paprika edelsuss|kreuzkummel|kumin|zimt|muskat|oregano|majoran|gewurz|chiliflocken|chilipulver|cayenne|garam masala|nelke|lorbeer|kardamom|koriandersamen|senfsamen|vanille|hefeflocken|aromat|streuwurze|harissa|miso/],
   ['konserven', /\bdosen?\b|konserve|gehackte tomaten|tomaten,? gehackt|passata|passierte|tomatenmark|pelati|kokosmilch|kokosnussmilch|thunfisch|kidney|oliven|kapern|essiggurke|gewurzgurke|cornichon|pesto/],
   ['brot', /\bbrot|brotchen|baguette|toast|tortilla|\bwraps?\b|fladenbrot|\bnaan|\bpita|zwieback|paniermehl|semmelbrosel|knackebrot|gipfeli|croissant|zopf/],
+  ['milch', /(hafer|soja|mandel|reis|erbsen|cashew|kokos|dinkel)(milch|drink|joghurt|jogurt|sahne|rahm|cuisine|quark)|pflanzen(drink|milch)|kokosjoghurt/],
   ['backen', /mehl|zucker|backpulver|\bhefe|natron|starke|maizena|gelatine|agar|kakao|schokolade|kuvertur|honig|sirup|konfiture|marmelade|haferflocken|musli|cornflakes|nuss|mandel|cashew|pinienkern|sonnenblumenkern|kurbiskern|sesam|leinsamen|chiasamen|rosinen|datteln|cranberries|kokosflocken|kokosraspel|streusel|biskuit|lebkuchen|vanillin/],
-  ['fleisch', /hackfleisch|gehacktes|\bhack\b|\brind|schwein|\bkalb|\blamm|poulet|hahnchen|\bhuhn|chicken|\bpute|truthahn|\bspeck|schinken|wurst|salami|cervelat|chorizo|lachs|fisch|forelle|dorsch|kabeljau|crevette|garnele|shrimp|scampi|filet|steak|schnitzel|geschnetzelt|\bente\b|meeresfruchte|muschel|tintenfisch/],
-  ['milch', /milch|sahne|\brahm|joghurt|jogurt|quark|butter|\bkase|kase\b|parmesan|pecorino|grana|mozzarella|\bfeta|ricotta|mascarpone|burrata|gruyere|emmentaler|raclette|halloumi|\beier?\b|eigelb|eiweiss|creme fraiche|schmand|tofu|tempeh|seitan|paneer|frischkase|huttenkase|skyr|gnocchi|blatterteig|kuchenteig|pizzateig|hummus|ravioli|tortellini/],
+  ['fleisch', /tofu|tempeh|seitan|sojaschnetzel|sojagranulat|sojamedaillon|textured|planted|beyond|fleischersatz|vegi|veggie|lupin|falafel|vegane?s? (hack|wurst|speck|schnitzel|burger)|hackfleisch|gehacktes|\bhack\b|\brind|schwein|\bkalb|\blamm|poulet|hahnchen|\bhuhn|chicken|\bpute|truthahn|\bspeck|schinken|wurst|salami|cervelat|chorizo|lachs|fisch|forelle|dorsch|kabeljau|crevette|garnele|shrimp|scampi|filet|steak|schnitzel|geschnetzelt|\bente\b|meeresfruchte|muschel|tintenfisch/],
+  ['milch', /drink\b|margarine|cuisine|milch|sahne|\brahm|joghurt|jogurt|quark|butter|\bkase|kase\b|parmesan|pecorino|grana|mozzarella|\bfeta|ricotta|mascarpone|burrata|gruyere|emmentaler|raclette|halloumi|\beier?\b|eigelb|eiweiss|creme fraiche|schmand|paneer|frischkase|huttenkase|skyr|gnocchi|blatterteig|kuchenteig|pizzateig|hummus|ravioli|tortellini/],
   ['teigwaren', /spaghetti|nudel|pasta|penne|fusilli|farfalle|rigatoni|lasagne|tagliatelle|linguine|makkaroni|hornli|spatzli|\breis\b|basmati|jasminreis|risotto|couscous|bulgur|quinoa|linsen|polenta|kichererbsen|getrocknete bohnen|ramen|glasnudel|reisnudel|udon|soba/],
   ['getraenke', /\bwasser\b|mineralwasser|saft|\bwein\b|weisswein|rotwein|\bbier\b|cola|kaffee|espresso|\btee\b|prosecco|\bsekt\b|limonade/],
   ['gemuese', /tomate|gurke|salat|zwiebel|schalotte|knoblauch|karotte|mohre|ruebli|kartoffel|paprika|peperoni|zucchini|aubergine|spinat|lauch|sellerie|brokkoli|broccoli|blumenkohl|kohl|pilz|champignon|kurbis|ingwer|chili|pfefferschote|avocado|zitrone|limette|apfel|birne|banane|beere|orange|mandarine|mango|ananas|traube|kiwi|pfirsich|aprikose|zwetschge|pflaume|kirsche|melone|granatapfel|petersilie|basilikum|koriander|schnittlauch|dill|minze|rosmarin|thymian|salbei|krauter|radieschen|rucola|fenchel|\bmais|erbse|bohne|spargel|\brande|susskartoffel|pastinake|rettich|mangold|sprossen|edamame|zitronengras|gemuse|obst/]
 ];
+const CAT_LABELS = {
+  vegan: { fleisch: ['🌱', 'Tofu, Tempeh & Fleischersatz'], milch: ['🥛', 'Pflanzendrinks, Joghurt & Kühlregal'] },
+  alle: { fleisch: ['🥩', 'Fleisch & Fisch'], milch: ['🧀', 'Milchprodukte, Eier & Kühlregal'] }
+};
+function applyDiet() {
+  const m = CAT_LABELS[state.settings.diet === 'alle' ? 'alle' : 'vegan'];
+  CATS.forEach(c => { if (m[c.id]) { c.icon = m[c.id][0]; c.label = m[c.id][1]; } });
+}
 const catById = id => CATS.find(c => c.id === id) || CATS[CATS.length - 1];
 const cleanName = name => norm(name).replace(/\(.*?\)/g, ' ').split(',')[0].replace(/\s+/g, ' ').trim();
 function categorize(unit, name) {
@@ -1943,6 +1994,30 @@ function renderMore(app) {
     </section>
 
     <section class="panel">
+      <h2>🏷 Tags & Filter</h2>
+      <label class="pick" style="border:0"><input type="checkbox" id="autoTags" ${state.settings.autoTags !== false ? 'checked' : ''}>
+        <span><b>Tags automatisch vereinheitlichen</b><br><span class="hint">z. B. „Vegane Hauptgerichte“ → „Vegan“ + „Hauptgericht“, „Quick“ → „Schnell“</span></span></label>
+      <label class="pick" style="border:0"><input type="checkbox" id="hideUnknown" ${state.settings.hideUnknownTags ? 'checked' : ''}>
+        <span><b>Nur bekannte Tags anzeigen</b><br><span class="hint">Blendet spezielle Tags aus, die keiner Kategorie zugeordnet werden können (z. B. „Palak Paneer“)</span></span></label>
+      <p class="hint">Tippe auf einen Tag, um ihn umzubenennen, mit einem anderen zusammenzuführen, aufzuteilen oder auszublenden:</p>
+      <div class="chips-wrap">${(() => {
+        const c = {}; state.recipes.forEach(r => r.tags.forEach(t => { c[t] = (c[t] || 0) + 1; }));
+        return Object.keys(c).sort((a, b) => c[b] - c[a] || a.localeCompare(b, 'de')).map(t => `<button class="chip" data-tag-edit="${esc(t)}">${esc(t)} <span class="hint">${c[t]}</span></button>`).join('') || '<span class="hint">Noch keine Tags.</span>';
+      })()}</div>
+      ${Object.keys(state.settings.tagMap || {}).length ? `<p class="hint">Eigene Regeln: ${Object.entries(state.settings.tagMap).map(([k, v]) => `${esc(k)} → ${v ? esc(v) : '<i>ausgeblendet</i>'}`).join(' · ')}</p>
+        <button class="btn small" id="tagMapReset">Eigene Tag-Regeln zurücksetzen</button>` : ''}
+    </section>
+
+    <section class="panel">
+      <h2>🛒 Abteilungen der Einkaufsliste</h2>
+      <div class="seg" id="diet">
+        <button data-d="vegan">🌱 Vegan</button><button data-d="alle">🍽️ Alles</button>
+      </div>
+      <p class="hint">Vegan: „Tofu, Tempeh & Fleischersatz“ und „Pflanzendrinks, Joghurt & Kühlregal“ statt Fleisch/Fisch und Milchprodukte/Eier.</p>
+      <button class="btn small" id="catOrderBtn">↕️ Reihenfolge der Abteilungen</button>
+    </section>
+
+    <section class="panel">
       <h2>🟠 Meine Migros-Produkte</h2>
       ${(() => {
         const prods = Object.entries(state.settings.products || {}).sort((a, b) => a[1].name.localeCompare(b[1].name, 'de'));
@@ -2009,6 +2084,30 @@ function renderMore(app) {
   $('#theme').onclick = e => { const b = e.target.closest('button'); if (!b) return; setTheme(b.dataset.t); mark(b.dataset.t); };
   $('#exp').onclick = exportBackup;
   $('#expSettings').onclick = exportSettings;
+  const setS = async (k, v) => { state.settings[k] = v; await Store.set('settings', state.settings); rebuild(); renderMore(app); };
+  $('#autoTags').onchange = e => setS('autoTags', e.target.checked);
+  $('#hideUnknown').onchange = e => setS('hideUnknownTags', e.target.checked);
+  $('#tagMapReset')?.addEventListener('click', () => { if (confirm('Alle eigenen Tag-Regeln löschen?')) setS('tagMap', {}); });
+  $$('[data-tag-edit]', app).forEach(b => b.onclick = async () => {
+    const tag = b.dataset.tagEdit;
+    const v = await choose(`Tag „${tag}“`, [
+      { label: '✏️ Umbenennen oder zusammenführen', value: 'rename' },
+      { label: '✂️ Aufteilen in mehrere Tags', value: 'split' },
+      { label: '🙈 Ausblenden', value: 'hide', danger: true }
+    ]);
+    if (!v) return;
+    let val = null;
+    if (v === 'rename') val = prompt(`Neuer Name für „${tag}“\n(Gibst du den Namen eines bestehenden Tags ein, werden beide zusammengeführt.)`, tag);
+    if (v === 'split') val = prompt(`In welche Tags soll „${tag}“ aufgeteilt werden? Mit Komma trennen.`, tag.split(/\s+/).join(', '));
+    if (v === 'hide') val = '';
+    if (val === null || (v !== 'hide' && !val.trim()) || val.trim() === tag) return;
+    await setS('tagMap', { ...(state.settings.tagMap || {}), [norm(tag)]: val.trim() });
+    toast(v === 'hide' ? 'Tag ausgeblendet' : 'Tag geändert ✅');
+  });
+  const dm = $$('#diet button'); const markD = () => dm.forEach(x => x.classList.toggle('on', x.dataset.d === (state.settings.diet === 'alle' ? 'alle' : 'vegan')));
+  markD();
+  $('#diet').onclick = async e => { const x = e.target.closest('button'); if (!x) return; state.settings.diet = x.dataset.d; await Store.set('settings', state.settings); applyDiet(); markD(); toast('Gespeichert'); };
+  $('#catOrderBtn').onclick = openCatOrder;
   $$('[data-pedit]', app).forEach(b => b.onclick = async () => { const r = await productForm(b.dataset.pedit); if (r) renderMore(app); });
   $('#planCfgBtn').onclick = openPlanSettings;
   $('#pantryForm').onsubmit = async e => {
@@ -2108,6 +2207,7 @@ async function init() {
   if (plan && typeof plan === 'object') state.plan = plan;
   if (local && local.recipes) state.local = { recipes: local.recipes, deleted: local.deleted || [] };
   if (settings) state.settings = { ...state.settings, ...settings };
+  applyDiet();
   if (lists && Array.isArray(lists.lists) && lists.lists.length) {
     state.lists = lists.lists; state.activeList = lists.active;
     state.lists.forEach(l => l.items.forEach(i => {
