@@ -9,7 +9,11 @@
     "cook_time": 20,
     "difficulty": "einfach",
     "rating": 5,
-    "tags": ["Pasta", "Vegetarisch", "Schnell"],
+    "tags": [
+      "Pasta",
+      "Vegetarisch",
+      "Schnell"
+    ],
     "ingredients": [
       "400 g Spaghetti",
       "1 Zwiebel",
@@ -30,7 +34,12 @@
       "Basilikum in Streifen schneiden und unter die Sauce rühren. Mit Pfeffer abschmecken.",
       "Nudeln abgießen, mit der Sauce und einem Schuss Nudelwasser mischen und mit Parmesan servieren."
     ],
-    "nutrition": { "calories": 520, "protein": 18, "fat": 14, "carbs": 78 },
+    "nutrition": {
+      "calories": 520,
+      "protein": 18,
+      "fat": 14,
+      "carbs": 78
+    },
     "notes": "Das ist ein Beispielrezept zum Ausprobieren. Du kannst es jederzeit löschen.",
     "last_cooked": "2026-11-08",
     "added_at": "2026-11-15T10:00:00+00:00"
@@ -45,7 +54,11 @@
     "cook_time": 25,
     "difficulty": "einfach",
     "rating": 4,
-    "tags": ["Curry", "Vegan", "Meal Prep"],
+    "tags": [
+      "Curry",
+      "Vegan",
+      "Meal Prep"
+    ],
     "ingredients": [
       "1 EL Öl",
       "1 Zwiebel",
@@ -69,7 +82,12 @@
       "Spinat unterheben und zusammenfallen lassen. Mit Limettensaft und Salz abschmecken.",
       "Mit Reis oder Fladenbrot servieren."
     ],
-    "nutrition": { "calories": 430, "protein": 17, "fat": 20, "carbs": 42 },
+    "nutrition": {
+      "calories": 430,
+      "protein": 17,
+      "fat": 20,
+      "carbs": 42
+    },
     "notes": "Hält sich 3 Tage im Kühlschrank und schmeckt aufgewärmt noch besser.",
     "last_cooked": "",
     "added_at": "2026-11-15T10:01:00+00:00"
@@ -84,7 +102,11 @@
     "cook_time": 15,
     "difficulty": "einfach",
     "rating": 4,
-    "tags": ["Frühstück", "Süß", "Vegetarisch"],
+    "tags": [
+      "Frühstück",
+      "Süß",
+      "Vegetarisch"
+    ],
     "ingredients": [
       "Teig:",
       "200 g Mehl",
@@ -106,9 +128,75 @@
       "Wenden, sobald sich Bläschen an der Oberfläche bilden, und noch etwa 1 Minute backen.",
       "Mit Ahornsirup und Beeren servieren."
     ],
-    "nutrition": { "calories": 690, "protein": 22, "fat": 22, "carbs": 98 },
+    "nutrition": {
+      "calories": 690,
+      "protein": 22,
+      "fat": 22,
+      "carbs": 98
+    },
     "notes": "",
     "last_cooked": "",
     "added_at": "2026-11-15T10:02:00+00:00"
+  },
+  {
+    "id": "veganes-palak-paneer-0f30a",
+    "title": "Veganes Palak Paneer",
+    "source_url": "https://www.zuckerjagdwurst.com/de/rezepte/veganes-palak-paneer",
+    "image": "images/veganes-palak-paneer-0f30a.jpg",
+    "servings": 4,
+    "prep_time": 0,
+    "cook_time": 40,
+    "difficulty": "",
+    "rating": 0,
+    "tags": [
+      "Indisch",
+      "Vegan",
+      "Curry",
+      "Vegane Hauptgerichte",
+      "Vegane Rezepte mit Tofu",
+      "Vegane Rezepte mit Reis",
+      "Vegane 30-Minuten-Rezepte",
+      "Vegane glutenfreie Rezepte"
+    ],
+    "ingredients": [
+      "400 g Basmatireis",
+      "600 g Naturtofu",
+      "1 Zwiebel",
+      "25 g Ingwer",
+      "2 Knoblauchzehen",
+      "0.5 grüne Chilischote",
+      "500 g frischer Babyspinat",
+      "2 EL Hefeflocken",
+      "2 TL Garam Masala",
+      "1 TL gemahlener Kreuzkümmel",
+      "2 EL Currypulver",
+      "1 TL edelsüßes Paprikapulver",
+      "150 ml passierte Tomaten",
+      "1 EL Agavendicksaft",
+      "ca. 100 ml Kokosmilch (aus der Dose)",
+      "2 EL Cashewmus (optional)",
+      "1 Zitrone (Saft)",
+      "Kokosnussöl zum Braten",
+      "Salz"
+    ],
+    "steps": [
+      "Zunächst den Reis nach Packungsanleitung im Topf oder mit dem Reiskocher zubereiten und anschließend warm halten.",
+      "Den Naturtofu mit dem Messer oder den Händen in grobe Stücke zerteilen. Zwiebel, Ingwer und Knoblauch schälen und fein würfeln. Die grüne Chili waschen, entkernen und ebenfalls fein schneiden.",
+      "Wasser in einem Topf zum Kochen bringen. Den Babyspinat falls nötig waschen und portionsweise 1–2 Minuten ins heiße Wasser legen, bis er zusammenfällt. Danach aus dem Wasser nehmen und mit eiskaltem Wasser abspülen. Den blanchierten Blattspinat anschließend glatt pürieren. Dabei so viel Wasser wie nötig dazugeben.",
+      "Den Naturtofu mit Hefeflocken vermengen, so dass er damit fast komplett ummantelt ist. Kokosöl in einer großen Pfanne schmelzen lassen und die Tofustückchen anbraten, bis sie kross und goldbraun sind. Danach aus der Pfanne nehmen und beiseitelegen.",
+      "Danach erneut etwas Kokosöl in der Pfanne erhitzen und Zwiebel, Ingwer, Knoblauch, grüne Chili, Garam Masala, Kreuzkümmel, Curry- und Paprikapulver und Salz darin 3–4 Minuten anbraten, bis die Zwiebelwürfel glasig sind.",
+      "Passierte Tomaten, etwas Agavendicksaft, Kokosmilch, optional Cashewmus und den pürierten Spinat hinzugeben, verrühren und 5–10 Minuten köcheln lassen. Mit Zitronensaft und, falls gewünscht, mehr Gewürzen abschmecken. Danach den Tofu dazugeben und vermengen.",
+      "Tipp: Wir geben das Cashewmus gern zum Curry, weil es eine nussige Cremigkeit mit sich bringt. Es ist aber optional und eher eine (sehr) leckere Special Zutat für dieses Rezept.",
+      "Das Spinatcurry mit gekochtem Reis servieren."
+    ],
+    "nutrition": {
+      "calories": null,
+      "protein": null,
+      "fat": null,
+      "carbs": null
+    },
+    "notes": "",
+    "last_cooked": "",
+    "added_at": "2026-11-15T11:55:19+00:00"
   }
 ]
