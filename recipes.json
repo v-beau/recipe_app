@@ -782,5 +782,52 @@
     "notes": "",
     "last_cooked": "",
     "added_at": "2026-11-15T15:49:06+00:00"
+  },
+  {
+    "id": "vegane-kraut-zwiebel-nudeln-083b3",
+    "title": "Vegane Kraut-Zwiebel-Nudeln",
+    "source_url": "https://www.zuckerjagdwurst.com/de/rezepte/vegane-kraut-zwiebel-nudeln",
+    "image": "images/vegane-kraut-zwiebel-nudeln-083b3.jpg",
+    "servings": 4,
+    "prep_time": 0,
+    "cook_time": 30,
+    "difficulty": "",
+    "rating": 0,
+    "tags": [
+      "Vegane Pasta-Rezepte",
+      "Vegane 30-Minuten-Rezepte"
+    ],
+    "ingredients": [
+      "1 kg Weißkohl",
+      "4 Zwiebeln",
+      "200 g Räuchertofu",
+      "200 g vegane Butter",
+      "50 g Zucker",
+      "500 g vegane breite Nudeln (z. B. Fettuccine oder Linguine)",
+      "1 Zitrone",
+      "15 g Petersilie",
+      "Pflanzenöl",
+      "Sojasoße (optional)",
+      "Liquid Smoke (optional)",
+      "Salz",
+      "Pfeffer"
+    ],
+    "steps": [
+      "Weißkohl in Streifen schneiden. Zwiebeln schälen, halbieren und ebenfalls in Streifen schneiden. Räuchertofu in kleine Würfel schneiden.",
+      "Vegane Butter in einer Pfanne bei mittlerer Hitze erwärmen und die Zwiebeln ca. 2-3 Minuten anschwitzen, bis sie glasig sind. Den Kohl und Zucker hinzugeben und alles gut vermengen. Bei mittlerer Hitze mit Deckel ca. 20 Minuten garen, bis der Kohl butterweich ist. Alle 5 Minuten umrühren, damit der Kohl gleichmäßig gart.",
+      "In der Zwischenzeit die Nudeln nach Packungsanleitung zubereiten.",
+      "Pflanzenöl in einer Pfanne erhitzen und die Räuchertofu-Würfel bei mittlerer Hitze ca. 3-4 Minuten anbraten. Optional am Ende mit einem Schuss Sojasoße und ein paar Tropfen Liquid Smoke würzen. Anschließend beiseitestellen.",
+      "Für die Toppings Zitrone waschen und in Spalten schneiden. Petersilie waschen und fein hacken.",
+      "Die gekochten Nudeln zum Kohl geben, untermengen und mit Salz und Pfeffer abschmecken. Jeden Teller zum Schluss mit Räuchertofu, frischer Petersilie und einer Zitronenspalte servieren."
+    ],
+    "nutrition": {
+      "calories": null,
+      "protein": null,
+      "fat": null,
+      "carbs": null
+    },
+    "notes": "",
+    "last_cooked": "",
+    "added_at": "2026-11-15T16:04:47+00:00"
   }
 ]
