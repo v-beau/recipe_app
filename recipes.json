@@ -198,5 +198,53 @@
     "notes": "",
     "last_cooked": "",
     "added_at": "2026-11-15T11:55:19+00:00"
+  },
+  {
+    "id": "spaghetti-all-assassina-1a360",
+    "title": "Spaghetti all’Assassina",
+    "source_url": "https://biancazapatka.com/de/spaghetti-all-assassina/",
+    "image": "images/spaghetti-all-assassina-1a360.jpg",
+    "servings": 2,
+    "prep_time": 10,
+    "cook_time": 25,
+    "difficulty": "",
+    "rating": 0,
+    "tags": [
+      "Hauptgericht",
+      "Lunch & Dinner",
+      "Pasta",
+      "Italienisch",
+      "Nudeln",
+      "Spaghetti",
+      "Tomaten"
+    ],
+    "ingredients": [
+      "600 ml Wasser",
+      "3 EL Tomatenmark",
+      "1 TL Salz",
+      "4 EL Olivenöl",
+      "2 Knoblauchzehen (gehackt oder leicht zerdrückt)",
+      "1 getrocknete Chilischote (oder Chiliflocken nach Geschmack)",
+      "250 g Spaghetti (ungekocht)",
+      "300 g passierte Tomaten",
+      "etwas Basilikum (optional zum Garnieren)"
+    ],
+    "steps": [
+      "*Hinweis: Schau dir das Rezept-Video + die Schritt-für-Schritt-Fotos oben im Beitrag an!",
+      "Für die Tomatenbrühe das Wasser in einem Topf zum Kochen bringen. Tomatenmark sowie Salz einrühren und aufkochen. Beiseitestellen und warm halten.",
+      "In einer großen Pfanne das Olivenöl erhitzen. Knoblauch und Chili kurz anrösten. Mit den passierten Tomaten ablöschen und kurz einkochen lassen.",
+      "Jetzt die rohen Spaghetti direkt in die Pfanne geben und 3-4 Minuten scharf anbraten, bis sie beginnen, an manchen Stellen dunkel zu werden. (Das Rösten ist der Schlüssel: So bekommen sie ihren charakteristischen „Assassina“-Geschmack.) Mit einem Pfannenwender oder einer Zange wenden und von der anderen Seite erneut 3-4 Minuten karamellisieren lassen.",
+      "Etwas von der heißen Tomatenbrühe hinzufügen (gerade so, dass der Boden bedeckt ist). Immer wieder umrühren und portionsweise Brühe nachgießen, ähnlich wie beim Risotto. Das Ganze dauert etwa 15-20 Minuten. Am Ende sollten die Spaghetti al dente, aber außen leicht knusprig und karamellisiert sein.",
+      "Mit etwas Basilikum garnieren und schmecken lassen!"
+    ],
+    "nutrition": {
+      "calories": 708,
+      "protein": 18.5,
+      "fat": 24.8,
+      "carbs": 103.0
+    },
+    "notes": "",
+    "last_cooked": "",
+    "added_at": "2026-11-15T14:42:19+00:00"
   }
 ]
