@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Meine Rezepte</title>
+<meta name="description" content="Meine persönliche Rezeptsammlung">
+<meta name="theme-color" content="#faf7f2">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rezepte">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script>
+  // Farbschema sofort setzen, damit nichts aufblitzt
+  try { const t = localStorage.getItem('rz_theme'); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+<style>
+:root {
+  --bg: #faf7f2; --card: #ffffff; --card-2: #f3eee6; --text: #1f1d1a; --muted: #6b655c;
+  --accent: #c9502a; --accent-soft: #fbe6dc; --accent-text: #ffffff; --green: #2f7d5b;
+  --border: #e6dfd4; --shadow: 0 1px 2px rgba(40,30,20,.06), 0 4px 16px rgba(40,30,20,.06);
+  --star: #e0a100; --danger: #b3261e;
+  --radius: 16px; --nav-h: 64px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141311; --card: #1f1d1a; --card-2: #2a2723; --text: #f2efe9; --muted: #a8a196;
+    --accent: #f08257; --accent-soft: #3a2a22; --accent-text: #1a0f0a; --green: #5cbf8f;
+    --border: #36322d; --shadow: 0 1px 2px rgba(0,0,0,.3); --star: #f5c23a; --danger: #f2b8b5;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141311; --card: #1f1d1a; --card-2: #2a2723; --text: #f2efe9; --muted: #a8a196;
+  --accent: #f08257; --accent-soft: #3a2a22; --accent-text: #1a0f0a; --green: #5cbf8f;
+  --border: #36322d; --shadow: 0 1px 2px rgba(0,0,0,.3); --star: #f5c23a; --danger: #f2b8b5;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 17px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px);
+  -webkit-tap-highlight-color: transparent;
+}
+a { color: var(--accent); }
+img { max-width: 100%; display: block; }
+h1, h2, h3 { line-height: 1.25; margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+
+/* Kopfzeile */
+header.top {
+  position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  padding-top: env(safe-area-inset-top); border-bottom: 1px solid var(--border);
+}
+header.top .wrap { display: flex; align-items: center; gap: 12px; min-height: 56px; }
+header.top h1 { font-size: 21px; font-weight: 750; letter-spacing: -.01em; flex: 1; }
+header.top .count { color: var(--muted); font-size: 15px; }
+
+/* Untere Navigation */
+nav.bottom {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  background: var(--card); border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+nav.bottom .wrap { display: grid; grid-template-columns: repeat(4, 1fr); height: var(--nav-h); padding: 0 4px; }
+nav.bottom a {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  text-decoration: none; color: var(--muted); font-size: 13px; font-weight: 600; position: relative; border-radius: 12px;
+}
+nav.bottom a .ico { font-size: 23px; line-height: 1; }
+nav.bottom a.active { color: var(--accent); }
+nav.bottom .badge {
+  position: absolute; top: 6px; left: calc(50% + 6px); background: var(--accent); color: var(--accent-text);
+  font-size: 11px; font-weight: 700; min-width: 19px; height: 19px; border-radius: 10px; padding: 0 5px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Allgemeine Bausteine */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 48px; padding: 10px 18px; border-radius: 14px; border: 1px solid var(--border);
+  background: var(--card); color: var(--text); font-weight: 600; cursor: pointer; text-decoration: none;
+  touch-action: manipulation;
+}
+.btn:active { transform: scale(.98); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn.danger { color: var(--danger); }
+.btn.small { min-height: 40px; padding: 6px 14px; font-size: 15px; }
+.btn.block { width: 100%; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+.btn-row .btn { flex: 1 1 auto; }
+.icon-btn {
+  width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--border); background: var(--card);
+  font-size: 22px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; flex: none;
+}
+input[type="text"], input[type="search"], input[type="url"], input[type="number"], input[type="date"], select, textarea {
+  width: 100%; min-height: 48px; padding: 11px 14px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--card); outline: none;
+}
+textarea { min-height: 120px; resize: vertical; line-height: 1.45; }
+input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+label.field { display: block; margin: 14px 0; }
+label.field > span { display: block; font-weight: 650; font-size: 15px; margin-bottom: 6px; }
+label.field small, .hint { color: var(--muted); font-size: 14px; font-weight: 400; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0 10px; }
+@media (max-width: 520px) { .grid4 { grid-template-columns: 1fr 1fr; } }
+.panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin: 16px 0; box-shadow: var(--shadow); }
+.panel h2 { font-size: 19px; margin-bottom: 8px; }
+details.panel > summary { cursor: pointer; font-weight: 700; font-size: 17px; min-height: 32px; display: flex; align-items: center; list-style: none; }
+details.panel > summary::-webkit-details-marker { display: none; }
+details.panel > summary::after { content: "▾"; margin-left: auto; color: var(--muted); transition: transform .2s; }
+details.panel[open] > summary::after { transform: rotate(180deg); }
+.banner { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin: 12px 0; font-size: 15px; }
+.muted { color: var(--muted); }
+.empty { text-align: center; padding: 48px 16px; color: var(--muted); }
+.empty .big { font-size: 56px; margin-bottom: 8px; }
+
+/* Liste */
+.toolbar { display: flex; gap: 10px; margin: 14px 0 10px; }
+.toolbar input { flex: 1; }
+.toolbar select { width: auto; flex: none; max-width: 42%; }
+.chips { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 10px; scrollbar-width: none; margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: none; min-height: 40px; padding: 6px 15px; border-radius: 20px; border: 1px solid var(--border);
+  background: var(--card); font-size: 15px; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.chip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-top: 6px; }
+.card {
+  display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; text-decoration: none; color: inherit; box-shadow: var(--shadow);
+}
+.card:active { transform: scale(.99); }
+.thumb { position: relative; aspect-ratio: 16 / 10; background: var(--card-2); overflow: hidden; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ph {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 52px;
+  background: linear-gradient(135deg, hsl(var(--h) 60% 80%), hsl(calc(var(--h) + 40) 55% 65%));
+}
+:root[data-theme="dark"] .ph { filter: brightness(.75); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ph { filter: brightness(.75); } }
+.card-body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 6px; }
+.card-body h3 { font-size: 18px; font-weight: 700; }
+.meta { display: flex; flex-wrap: wrap; gap: 4px 12px; color: var(--muted); font-size: 15px; align-items: center; }
+.stars { color: var(--star); letter-spacing: 1px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font-size: 13px; padding: 2px 10px; border-radius: 12px; background: var(--card-2); color: var(--muted); font-weight: 600; }
+.local-badge { font-size: 12px; padding: 2px 8px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+
+/* Detail */
+.hero { position: relative; aspect-ratio: 16 / 9; max-height: 420px; width: 100%; background: var(--card-2); overflow: hidden; border-radius: 0 0 var(--radius) var(--radius); }
+@media (min-width: 760px) { .hero { border-radius: var(--radius); margin-top: 16px; } }
+.hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hero .ph { font-size: 80px; }
+.detail-head { margin: 16px 0 8px; }
+.detail-head h2 { font-size: 27px; font-weight: 800; letter-spacing: -.01em; margin-bottom: 10px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin: 14px 0; }
+.fact { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; }
+.fact b { display: block; font-size: 17px; }
+.fact span { font-size: 13px; color: var(--muted); }
+.star-pick { display: inline-flex; gap: 2px; }
+.star-pick button { background: none; border: 0; font-size: 30px; line-height: 1; width: 44px; height: 44px; cursor: pointer; color: var(--border); padding: 0; }
+.star-pick button.on { color: var(--star); }
+.servings { display: flex; align-items: center; gap: 12px; }
+.servings .num { font-size: 22px; font-weight: 800; min-width: 3ch; text-align: center; }
+.section-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+ul.ing, ol.steps { list-style: none; padding: 0; margin: 0; }
+ul.ing li, ol.steps li {
+  display: flex; gap: 12px; align-items: flex-start; padding: 11px 4px; border-bottom: 1px solid var(--border); cursor: pointer; min-height: 48px;
+}
+ul.ing li:last-child, ol.steps li:last-child { border-bottom: 0; }
+ul.ing li .box { flex: none; width: 24px; height: 24px; border-radius: 7px; border: 2px solid var(--border); margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+ul.ing li.done { color: var(--muted); text-decoration: line-through; }
+ul.ing li.done .box { background: var(--green); border-color: var(--green); color: #fff; }
+ul.ing li.done .box::after { content: "✓"; }
+ul.ing li.sub { font-weight: 700; cursor: default; }
+ol.steps { counter-reset: s; }
+ol.steps li .n { flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-weight: 800; display: flex; align-items: center; justify-content: center; }
+ol.steps li.done { color: var(--muted); }
+ol.steps li.done .n { background: var(--green); color: #fff; }
+table.nut { width: 100%; border-collapse: collapse; font-size: 16px; }
+table.nut th, table.nut td { padding: 9px 6px; border-bottom: 1px solid var(--border); text-align: right; }
+table.nut th:first-child, table.nut td:first-child { text-align: left; }
+table.nut thead th { font-size: 13px; color: var(--muted); font-weight: 600; }
+.notes { white-space: pre-wrap; }
+.source { word-break: break-word; }
+.back-link { display: inline-flex; align-items: center; min-height: 48px; text-decoration: none; font-weight: 650; }
+
+/* Formular */
+.img-edit { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.img-edit .preview { width: 120px; aspect-ratio: 4/3; border-radius: 12px; overflow: hidden; background: var(--card-2); position: relative; flex: none; }
+.img-edit .preview img { width: 100%; height: 100%; object-fit: cover; }
+.img-edit .preview .ph { font-size: 36px; }
+.stars-input { display: flex; gap: 2px; }
+.stars-input button { background: none; border: 0; font-size: 34px; width: 48px; height: 48px; color: var(--border); cursor: pointer; padding: 0; }
+.stars-input button.on { color: var(--star); }
+.sticky-save { position: sticky; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 8px); z-index: 5; }
+
+/* Einkaufsliste */
+.shop-add { display: flex; gap: 10px; margin: 14px 0; }
+.shop-list { list-style: none; padding: 0; margin: 0; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.shop-list li { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--border); min-height: 56px; cursor: pointer; }
+.shop-list li:last-child { border-bottom: 0; }
+.shop-list li .box { flex: none; width: 26px; height: 26px; border-radius: 8px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; }
+.shop-list li.done { color: var(--muted); text-decoration: line-through; }
+.shop-list li.done .box { background: var(--green); border-color: var(--green); }
+.shop-list li.done .box::after { content: "✓"; }
+.shop-list li .txt { flex: 1; }
+.shop-list li .src { display: block; font-size: 13px; color: var(--muted); text-decoration: none; }
+.shop-list li .del { background: none; border: 0; color: var(--muted); font-size: 22px; width: 40px; height: 40px; cursor: pointer; flex: none; }
+
+/* Dialog */
+dialog { border: 0; border-radius: 20px; padding: 0; width: min(560px, calc(100vw - 24px)); max-height: 85vh; background: var(--card); color: var(--text); box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+dialog::backdrop { background: rgba(0,0,0,.45); }
+dialog .dlg-head { padding: 16px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+dialog .dlg-body { padding: 8px 18px; overflow: auto; max-height: 58vh; }
+dialog .dlg-foot { padding: 12px 18px 18px; display: flex; gap: 10px; border-top: 1px solid var(--border); }
+dialog .dlg-foot .btn { flex: 1; }
+.pick { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); min-height: 52px; cursor: pointer; }
+.pick input { width: 24px; height: 24px; accent-color: var(--accent); flex: none; }
+
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+.seg button { min-height: 46px; padding: 8px 16px; border: 0; background: var(--card); cursor: pointer; font-weight: 600; }
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button.on { background: var(--accent); color: var(--accent-text); }
+
+#toast {
+  position: fixed; left: 50%; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px); transform: translateX(-50%) translateY(20px);
+  background: var(--text); color: var(--bg); padding: 12px 18px; border-radius: 14px; font-weight: 600; font-size: 15px;
+  opacity: 0; pointer-events: none; transition: .25s; z-index: 50; max-width: calc(100vw - 32px); text-align: center;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1 id="pageTitle">Meine Rezepte</h1>
+    <span class="count" id="headCount"></span>
+  </div>
+</header>
+
+<main id="app" class="wrap" aria-live="polite"></main>
+
+<nav class="bottom" aria-label="Hauptmenü">
+  <div class="wrap">
+    <a href="#/" data-nav="list"><span class="ico">📖</span>Rezepte</a>
+    <a href="#/shop" data-nav="shop"><span class="ico">🛒</span>Einkauf<span class="badge" id="shopBadge" hidden></span></a>
+    <a href="#/new" data-nav="new"><span class="ico">➕</span>Neu</a>
+    <a href="#/more" data-nav="more"><span class="ico">⚙️</span>Mehr</a>
+  </div>
+</nav>
+
+<dialog id="pickDlg">
+  <div class="dlg-head"><h2 style="font-size:19px">Rezepte für die Einkaufsliste</h2><button class="icon-btn" data-close aria-label="Schließen">✕</button></div>
+  <div class="dlg-body" id="pickList"></div>
+  <div class="dlg-foot"><button class="btn" data-close>Abbrechen</button><button class="btn primary" id="pickOk">Zutaten hinzufügen</button></div>
+</dialog>
+
+<div id="toast" role="status"></div>
+
+<script>
+'use strict';
+
+/* =========================================================
+   Kleine Helfer
+   ========================================================= */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const norm = s => String(s ?? '').toLowerCase().replace(/ß/g, 'ss').normalize('NFD').replace(/[̀-ͯ]/g, '');
+const todayISO = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+const num = v => { if (v === '' || v == null) return null; const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : null; };
+const isUrl = s => /^https?:\/\//i.test(String(s || '').trim());
+
+function toast(msg, ms = 2600) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), ms);
+}
+
+function fmtMin(m) {
+  m = Math.round(+m || 0); if (!m) return '';
+  if (m < 60) return m + ' Min';
+  const h = Math.floor(m / 60), r = m % 60;
+  return h + ' Std' + (r ? ' ' + r + ' Min' : '');
+}
+function fmtDate(s) {
+  if (!s) return '';
+  const d = new Date(s.length === 10 ? s + 'T12:00:00' : s);
+  return isNaN(d) ? s : d.toLocaleDateString('de-DE', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function starsText(r) { r = Math.round(+r || 0); return r ? '★'.repeat(r) + '☆'.repeat(5 - r) : ''; }
+function totalTime(r) { return (+r.prep_time || 0) + (+r.cook_time || 0); }
+const DIFF = { einfach: 'Einfach', mittel: 'Mittel', schwer: 'Schwer' };
+
+function slug(s) { return norm(s).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'rezept'; }
+function makeId(title) { return slug(title) + '-' + Date.now().toString(36).slice(-5); }
+
+/* Quell-URLs vergleichbar machen (für Duplikat-Erkennung) */
+function normalizeUrl(u) {
+  try {
+    const x = new URL(String(u).trim());
+    x.hash = '';
+    x.hostname = x.hostname.toLowerCase().replace(/^www\./, '');
+    [...x.searchParams.keys()].forEach(k => { if (/^(utm_|fbclid|gclid|mc_|ref$|source$|igshid|si$)/i.test(k)) x.searchParams.delete(k); });
+    x.searchParams.sort();
+    let p = x.pathname.replace(/\/+$/, '');
+    return (x.hostname + p + (x.searchParams.toString() ? '?' + x.searchParams : '')).toLowerCase();
+  } catch (e) { return String(u || '').trim().toLowerCase(); }
+}
+
+/* Platzhalterbild (Farbverlauf + Emoji), wenn ein Rezept kein Foto hat */
+function phEmoji(r) {
+  const t = norm((r.tags || []).join(' ') + ' ' + r.title);
+  const map = [[/pasta|nudel|spaghetti|lasagne/, '🍝'], [/salat/, '🥗'], [/suppe|eintopf/, '🍲'], [/curry/, '🍛'],
+    [/kuchen|torte|dessert|suss|backen|keks|cookie/, '🍰'], [/pancake|fruhstuck|pfannkuchen|waffel/, '🥞'],
+    [/fisch|lachs|meeresfr/, '🐟'], [/huhn|hahnchen|chicken|poulet/, '🍗'], [/fleisch|rind|schwein|burger/, '🥩'],
+    [/brot|brotchen|pizza/, '🍕'], [/vegan|vegetar|gemuse/, '🥦'], [/getrank|drink|smoothie/, '🥤']];
+  for (const [re, e] of map) if (re.test(t)) return e;
+  return '🍽️';
+}
+function hue(s) { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) % 360; return h; }
+function imageHtml(r, cls = '') {
+  const ph = `<div class="ph" style="--h:${hue(r.title)}">${phEmoji(r)}</div>`;
+  if (!r.image) return ph;
+  return ph + `<img class="${cls}" src="${esc(r.image)}" alt="" loading="lazy" onerror="this.remove()">`;
+}
+
+/* =========================================================
+   Mengen erkennen und umrechnen
+   ========================================================= */
+const FRAC = { '½': .5, '⅓': 1 / 3, '⅔': 2 / 3, '¼': .25, '¾': .75, '⅛': .125, '⅕': .2 };
+const NUM_RE = String.raw`(?:\d+\s+\d+\/\d+|\d+\/\d+|\d+[.,]\d+|\d+\s*[½⅓⅔¼¾⅛⅕]|\d+|[½⅓⅔¼¾⅛⅕])`;
+const QTY_RE = new RegExp(String.raw`^\s*(${NUM_RE})(?:\s*(?:-|–|bis)\s*(${NUM_RE}))?(?=\s|[a-zA-ZäöüÄÖÜ(]|$)\s*`);
+const UNITS = ['kg', 'g', 'mg', 'ml', 'cl', 'dl', 'l', 'EL', 'TL', 'Msp', 'Prise', 'Prisen', 'Tasse', 'Tassen', 'Becher', 'Bund', 'Dose', 'Dosen',
+  'Pck', 'Päckchen', 'Packung', 'Packungen', 'Stück', 'Stk', 'Zehe', 'Zehen', 'Scheibe', 'Scheiben', 'Glas', 'Gläser', 'Zweig', 'Zweige',
+  'Blatt', 'Blätter', 'Handvoll', 'Schuss', 'Spritzer', 'Würfel', 'Tropfen', 'cup', 'cups', 'tbsp', 'tsp', 'oz', 'lb', 'lbs', 'pinch'];
+const UNIT_RE = new RegExp('^(' + UNITS.map(u => u.replace('.', '\\.')).join('|') + ')\\.?(?=\\s|$|,)', 'i');
+
+function toNum(t) {
+  t = t.trim(); let m;
+  if ((m = t.match(/^(\d+)\s+(\d+)\/(\d+)$/))) return +m[1] + m[2] / m[3];
+  if ((m = t.match(/^(\d+)\/(\d+)$/))) return m[1] / m[2];
+  if ((m = t.match(/^(\d+)\s*([½⅓⅔¼¾⅛⅕])$/))) return +m[1] + FRAC[m[2]];
+  if (FRAC[t] != null) return FRAC[t];
+  return parseFloat(t.replace(',', '.'));
+}
+function parseIngredient(line) {
+  const raw = String(line || '').trim();
+  const m = raw.match(QTY_RE);
+  if (!m) return { qty: null, qty2: null, unit: '', name: raw, raw };
+  let rest = raw.slice(m[0].length);
+  let unit = '';
+  const u = rest.match(UNIT_RE);
+  if (u) { unit = u[1]; rest = rest.slice(u[0].length).trim(); }
+  return { qty: toNum(m[1]), qty2: m[2] ? toNum(m[2]) : null, unit, name: rest.trim(), raw };
+}
+function fmtQty(n) {
+  if (n == null || !isFinite(n)) return '';
+  if (n >= 100) return String(Math.round(n / 5) * 5);
+  if (n >= 10) return String(Math.round(n));
+  if (n > 0 && n < 0.2) return n.toFixed(2).replace('.', ',').replace(/0$/, '');
+  const whole = Math.floor(n), frac = n - whole;
+  const fr = [[0, ''], [.25, '¼'], [1 / 3, '⅓'], [.5, '½'], [2 / 3, '⅔'], [.75, '¾'], [1, '']];
+  for (const [v, s] of fr) {
+    if (Math.abs(frac - v) < 0.04) { const w = v === 1 ? whole + 1 : whole; return ((w ? String(w) : '') + s) || '0'; }
+  }
+  return n.toFixed(1).replace('.', ',');
+}
+function scaleIngredient(line, f) {
+  const p = parseIngredient(line);
+  if (p.qty == null || Math.abs(f - 1) < 1e-9) return p.raw;
+  let q = fmtQty(p.qty * f);
+  if (p.qty2 != null) q += '–' + fmtQty(p.qty2 * f);
+  return [q, p.unit, p.name].filter(Boolean).join(' ');
+}
+const isSubHeading = l => /:\s*$/.test(l) && !QTY_RE.test(l);
+
+/* =========================================================
+   Speicher (IndexedDB, Ersatz: localStorage)
+   ========================================================= */
+const Store = {
+  _db: null,
+  open() {
+    if (!this._db) this._db = new Promise((res, rej) => {
+      const r = indexedDB.open('rezepte-app', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('kv');
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+    });
+    return this._db;
+  },
+  async get(k) {
+    try {
+      const db = await this.open();
+      return await new Promise((res, rej) => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); });
+    } catch (e) { try { return JSON.parse(localStorage.getItem('rz_' + k)); } catch (_) { return null; } }
+  },
+  async set(k, v) {
+    try {
+      const db = await this.open();
+      await new Promise((res, rej) => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = res; t.onerror = () => rej(t.error); });
+    } catch (e) {
+      try { localStorage.setItem('rz_' + k, JSON.stringify(v)); }
+      catch (e2) { toast('⚠️ Speicher voll – bitte unter „Mehr“ ein Backup exportieren.', 5000); }
+    }
+  }
+};
+
+/* =========================================================
+   Zustand
+   ========================================================= */
+const state = {
+  remote: [], remoteOk: true,
+  local: { recipes: {}, deleted: [] },   // Änderungen auf diesem Gerät
+  shop: [],
+  settings: { repo: '' },
+  recipes: [],
+  filter: { q: '', tags: new Set(), sort: 'new' },
+  servings: {},
+  listScroll: 0,
+  wakeLock: null,
+  prefillUrl: ''
+};
+
+function normalizeRecipe(r) {
+  const arr = v => Array.isArray(v) ? v.map(x => String(x).trim()).filter(Boolean) : String(v || '').split('\n').map(x => x.trim()).filter(Boolean);
+  const n = r.nutrition || {};
+  return {
+    id: String(r.id || makeId(r.title || 'rezept')),
+    title: String(r.title || 'Ohne Titel').trim(),
+    source_url: String(r.source_url || r.source || '').trim(),
+    image: String(r.image || ''),
+    servings: Math.max(1, Math.round(num(r.servings) || 1)),
+    prep_time: Math.max(0, Math.round(num(r.prep_time) || 0)),
+    cook_time: Math.max(0, Math.round(num(r.cook_time) || 0)),
+    difficulty: DIFF[r.difficulty] ? r.difficulty : '',
+    rating: Math.min(5, Math.max(0, Math.round(num(r.rating) || 0))),
+    tags: Array.isArray(r.tags) ? r.tags.map(t => String(t).trim()).filter(Boolean) : String(r.tags || '').split(',').map(t => t.trim()).filter(Boolean),
+    ingredients: arr(r.ingredients),
+    steps: arr(r.steps),
+    nutrition: { calories: num(n.calories), protein: num(n.protein), fat: num(n.fat), carbs: num(n.carbs) },
+    notes: String(r.notes || ''),
+    last_cooked: r.last_cooked ? String(r.last_cooked).slice(0, 10) : '',
+    added_at: r.added_at || new Date().toISOString()
+  };
+}
+
+function rebuild() {
+  const map = new Map();
+  const del = new Set(state.local.deleted);
+  for (const r of state.remote) if (!del.has(r.id)) map.set(r.id, r);
+  for (const [id, r] of Object.entries(state.local.recipes)) map.set(id, r);
+  state.recipes = [...map.values()];
+  $('#headCount').textContent = state.recipes.length ? state.recipes.length + ' Rezepte' : '';
+  updateShopBadge();
+}
+const byId = id => state.recipes.find(r => r.id === id);
+const remoteIds = () => new Set(state.remote.map(r => r.id));
+
+async function saveLocal() { await Store.set('local', state.local); }
+async function saveRecipe(r) {
+  r = normalizeRecipe(r);
+  state.local.recipes[r.id] = r;
+  state.local.deleted = state.local.deleted.filter(x => x !== r.id);
+  await saveLocal(); rebuild(); return r;
+}
+async function deleteRecipe(id) {
+  delete state.local.recipes[id];
+  if (remoteIds().has(id) && !state.local.deleted.includes(id)) state.local.deleted.push(id);
+  await saveLocal(); rebuild();
+}
+async function saveShop() { await Store.set('shop', state.shop); updateShopBadge(); }
+function updateShopBadge() {
+  const n = state.shop.filter(i => !i.done).length, b = $('#shopBadge');
+  b.hidden = !n; b.textContent = n;
+}
+
+/* GitHub-Repository herausfinden (für "Per Link importieren") */
+function getRepo() {
+  if (state.settings.repo) return state.settings.repo.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\/+$/, '');
+  const h = location.hostname;
+  if (h.endsWith('.github.io')) {
+    const owner = h.replace('.github.io', '');
+    const first = location.pathname.split('/').filter(Boolean)[0];
+    return owner + '/' + (first && !first.includes('.') ? first : h);
+  }
+  return '';
+}
+function issueUrl(link) {
+  const repo = getRepo();
+  if (!repo) return '';
+  return `https://github.com/${repo}/issues/new?title=${encodeURIComponent(link)}&body=${encodeURIComponent('Tags: \nNotiz: ')}`;
+}
+
+/* =========================================================
+   Router
+   ========================================================= */
+function route() {
+  if (state.wakeLock) { state.wakeLock.release().catch(() => {}); state.wakeLock = null; }
+  const parts = (location.hash.slice(1) || '/').split('/').filter(Boolean);
+  const view = parts[0] || 'list', id = parts[1] ? decodeURIComponent(parts[1]) : '';
+  const navKey = { list: 'list', r: 'list', shop: 'shop', new: 'new', edit: 'new', more: 'more' }[view] || 'list';
+  $$('nav.bottom a').forEach(a => a.classList.toggle('active', a.dataset.nav === navKey));
+  const app = $('#app');
+  if (view === 'r') renderDetail(app, id);
+  else if (view === 'new') renderForm(app, null);
+  else if (view === 'edit') renderForm(app, byId(id));
+  else if (view === 'shop') renderShop(app);
+  else if (view === 'more') renderMore(app);
+  else { renderList(app); requestAnimationFrame(() => window.scrollTo(0, state.listScroll)); return; }
+  window.scrollTo(0, 0);
+}
+window.addEventListener('scroll', () => { if (!location.hash || location.hash === '#/') state.listScroll = window.scrollY; }, { passive: true });
+
+/* =========================================================
+   Ansicht: Rezeptliste
+   ========================================================= */
+function renderList(app) {
+  $('#pageTitle').textContent = 'Meine Rezepte';
+  const tagCount = {};
+  state.recipes.forEach(r => r.tags.forEach(t => { tagCount[t] = (tagCount[t] || 0) + 1; }));
+  const tags = Object.keys(tagCount).sort((a, b) => tagCount[b] - tagCount[a] || a.localeCompare(b, 'de'));
+  for (const t of [...state.filter.tags]) if (!tagCount[t]) state.filter.tags.delete(t);
+  const f = state.filter;
+  app.innerHTML = `
+    ${state.remoteOk ? '' : `<div class="banner">⚠️ Die Rezeptdatei (recipes.json) konnte nicht geladen werden. Du siehst nur Rezepte, die auf diesem Gerät gespeichert sind. Bist du offline oder hast du die Datei direkt geöffnet statt über GitHub Pages?</div>`}
+    <div class="toolbar">
+      <label class="sr-only" for="q">Suche</label>
+      <input type="search" id="q" placeholder="🔍  Titel oder Zutat suchen …" value="${esc(f.q)}" autocomplete="off">
+      <label class="sr-only" for="sort">Sortierung</label>
+      <select id="sort">
+        <option value="new">Neueste</option><option value="az">A–Z</option><option value="rating">Beste</option>
+        <option value="cooked">Zuletzt gekocht</option><option value="fast">Schnellste</option>
+      </select>
+    </div>
+    ${tags.length ? `<div class="chips" id="chips">
+      <button class="chip ${f.tags.size ? '' : 'on'}" data-tag="">Alle</button>
+      ${tags.map(t => `<button class="chip ${f.tags.has(t) ? 'on' : ''}" data-tag="${esc(t)}">${esc(t)}</button>`).join('')}
+    </div>` : ''}
+    <div id="results"></div>`;
+  $('#sort').value = f.sort;
+  $('#q').addEventListener('input', e => { f.q = e.target.value; renderResults(); });
+  $('#sort').addEventListener('change', e => { f.sort = e.target.value; renderResults(); });
+  $('#chips')?.addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    const t = b.dataset.tag;
+    if (!t) f.tags.clear(); else f.tags.has(t) ? f.tags.delete(t) : f.tags.add(t);
+    $$('.chip', app).forEach(c => c.classList.toggle('on', c.dataset.tag ? f.tags.has(c.dataset.tag) : !f.tags.size));
+    renderResults();
+  });
+  renderResults();
+}
+
+function filteredRecipes() {
+  const f = state.filter;
+  const terms = norm(f.q).split(/\s+/).filter(Boolean);
+  let list = state.recipes.filter(r => {
+    if (f.tags.size && ![...f.tags].every(t => r.tags.includes(t))) return false;
+    if (!terms.length) return true;
+    const hay = norm(r.title + ' ' + r.ingredients.join(' ') + ' ' + r.tags.join(' '));
+    return terms.every(t => hay.includes(t));
+  });
+  const s = f.sort;
+  list.sort((a, b) => {
+    if (s === 'az') return a.title.localeCompare(b.title, 'de');
+    if (s === 'rating') return (b.rating - a.rating) || a.title.localeCompare(b.title, 'de');
+    if (s === 'cooked') return (b.last_cooked || '').localeCompare(a.last_cooked || '');
+    if (s === 'fast') return (totalTime(a) || 1e9) - (totalTime(b) || 1e9);
+    return String(b.added_at).localeCompare(String(a.added_at));
+  });
+  return list;
+}
+
+function renderResults() {
+  const box = $('#results'); if (!box) return;
+  const list = filteredRecipes();
+  if (!state.recipes.length) {
+    box.innerHTML = `<div class="empty"><div class="big">🍳</div><p><b>Noch keine Rezepte.</b><br>Tippe unten auf <b>➕ Neu</b>, um eines hinzuzufügen.</p></div>`;
+    return;
+  }
+  if (!list.length) { box.innerHTML = `<div class="empty"><div class="big">🔍</div><p>Nichts gefunden. Versuch einen anderen Suchbegriff.</p></div>`; return; }
+  box.innerHTML = `<div class="grid">${list.map(r => {
+    const t = totalTime(r);
+    return `<a class="card" href="#/r/${encodeURIComponent(r.id)}">
+      <div class="thumb">${imageHtml(r)}</div>
+      <div class="card-body">
+        <h3>${esc(r.title)}</h3>
+        <div class="meta">${t ? `<span>⏱ ${fmtMin(t)}</span>` : ''}${r.rating ? `<span class="stars" aria-label="${r.rating} von 5 Sternen">${starsText(r.rating)}</span>` : ''}${r.difficulty ? `<span>${DIFF[r.difficulty]}</span>` : ''}</div>
+        ${r.tags.length ? `<div class="tags">${r.tags.slice(0, 5).map(x => `<span class="tag">${esc(x)}</span>`).join('')}</div>` : ''}
+      </div></a>`;
+  }).join('')}</div>`;
+}
+
+/* =========================================================
+   Ansicht: Rezept-Details
+   ========================================================= */
+function renderDetail(app, id) {
+  const r = byId(id);
+  if (!r) { app.innerHTML = `<div class="empty"><div class="big">🤷</div><p>Dieses Rezept gibt es nicht (mehr).</p><a class="btn" href="#/">Zur Übersicht</a></div>`; return; }
+  $('#pageTitle').textContent = 'Rezept';
+  const base = r.servings || 1;
+  const cur = state.servings[id] || base;
+  const t = totalTime(r);
+  const local = !!state.local.recipes[id];
+  app.innerHTML = `
+    <div style="margin:0 -16px"><div class="hero">${imageHtml(r)}</div></div>
+    <a class="back-link" href="#/">‹ Alle Rezepte</a>
+    <div class="detail-head">
+      <h2>${esc(r.title)}</h2>
+      <div class="meta">
+        <span class="star-pick" id="rate" aria-label="Bewertung">${[1, 2, 3, 4, 5].map(i => `<button data-v="${i}" class="${i <= r.rating ? 'on' : ''}" aria-label="${i} Sterne">★</button>`).join('')}</span>
+        ${local ? '<span class="local-badge" title="Nur auf diesem Gerät geändert">auf diesem Gerät geändert</span>' : ''}
+      </div>
+      ${r.tags.length ? `<div class="tags" style="margin-top:8px">${r.tags.map(x => `<span class="tag">${esc(x)}</span>`).join('')}</div>` : ''}
+    </div>
+    <div class="facts">
+      ${r.prep_time ? `<div class="fact"><b>${fmtMin(r.prep_time)}</b><span>Vorbereitung</span></div>` : ''}
+      ${r.cook_time ? `<div class="fact"><b>${fmtMin(r.cook_time)}</b><span>Kochen/Backen</span></div>` : ''}
+      ${t ? `<div class="fact"><b>${fmtMin(t)}</b><span>Gesamt</span></div>` : ''}
+      ${r.difficulty ? `<div class="fact"><b>${DIFF[r.difficulty]}</b><span>Schwierigkeit</span></div>` : ''}
+      <div class="fact"><b>${r.last_cooked ? fmtDate(r.last_cooked) : '–'}</b><span>Zuletzt gekocht</span></div>
+    </div>
+
+    <section class="panel">
+      <div class="section-title">
+        <h2>Zutaten</h2>
+        <div class="servings" aria-label="Portionen">
+          <button class="icon-btn" id="sMinus" aria-label="Weniger Portionen">−</button>
+          <div style="text-align:center"><div class="num" id="sNum">${cur}</div><div class="hint" style="margin-top:-4px">Portionen</div></div>
+          <button class="icon-btn" id="sPlus" aria-label="Mehr Portionen">+</button>
+        </div>
+      </div>
+      <ul class="ing" id="ingList"></ul>
+      <div class="btn-row"><button class="btn block" id="toShop">🛒 Zutaten auf die Einkaufsliste</button></div>
+    </section>
+
+    <section class="panel" id="nutBox" hidden></section>
+
+    ${r.steps.length ? `<section class="panel"><h2>Zubereitung</h2>
+      <ol class="steps" id="stepList">${r.steps.map((s, i) => `<li><span class="n">${i + 1}</span><span>${esc(s)}</span></li>`).join('')}</ol>
+      <p class="hint">Tipp: Tippe einen Schritt an, um ihn als erledigt zu markieren.</p></section>` : ''}
+
+    ${r.notes ? `<section class="panel"><h2>Notizen</h2><div class="notes">${esc(r.notes)}</div></section>` : ''}
+
+    <section class="panel">
+      <h2>Quelle</h2>
+      <div class="source">${isUrl(r.source_url) ? `<a href="${esc(r.source_url)}" target="_blank" rel="noopener">${esc(r.source_url.replace(/^https?:\/\/(www\.)?/, ''))} ↗</a>` : esc(r.source_url || '–')}</div>
+    </section>
+
+    <div class="btn-row">
+      <button class="btn primary" id="cooked">✅ Heute gekocht</button>
+      ${'wakeLock' in navigator ? '<button class="btn" id="wake">🔆 Bildschirm anlassen</button>' : ''}
+    </div>
+    <div class="btn-row">
+      <a class="btn" href="#/edit/${encodeURIComponent(r.id)}">✏️ Bearbeiten</a>
+      <button class="btn" id="share">📤 Teilen</button>
+      <button class="btn danger" id="del">🗑 Löschen</button>
+    </div>`;
+
+  const update = () => {
+    const c = state.servings[id] || base, f = c / base;
+    $('#sNum').textContent = c;
+    $('#ingList').innerHTML = r.ingredients.length
+      ? r.ingredients.map(l => isSubHeading(l) ? `<li class="sub">${esc(l)}</li>` : `<li><span class="box"></span><span>${esc(scaleIngredient(l, f))}</span></li>`).join('')
+      : '<li class="sub muted">Keine Zutaten eingetragen.</li>';
+    const n = r.nutrition || {};
+    const keys = [['calories', 'Kalorien', 'kcal'], ['protein', 'Eiweiß', 'g'], ['fat', 'Fett', 'g'], ['carbs', 'Kohlenhydrate', 'g']];
+    const has = keys.some(([k]) => n[k] != null && n[k] > 0);
+    const box = $('#nutBox'); box.hidden = !has;
+    if (has) {
+      const fv = (v, u) => v == null ? '–' : (u === 'kcal' || v >= 10 ? Math.round(v) : Math.round(v * 10) / 10).toLocaleString('de-DE') + ' ' + u;
+      box.innerHTML = `<h2>Nährwerte</h2><table class="nut"><thead><tr><th></th><th>pro Portion</th><th>gesamt (${c} ${c === 1 ? 'Portion' : 'Portionen'})</th></tr></thead><tbody>
+        ${keys.map(([k, l, u]) => `<tr><td>${l}</td><td>${fv(n[k], u)}</td><td>${n[k] == null ? '–' : fv(n[k] * c, u)}</td></tr>`).join('')}
+      </tbody></table><p class="hint">Werte pro Portion laut Quelle bzw. eigener Angabe – ungefähre Angaben.</p>`;
+    }
+  };
+  update();
+  const setServ = d => { const c = Math.max(1, Math.min(99, (state.servings[id] || base) + d)); state.servings[id] = c; update(); };
+  $('#sMinus').onclick = () => setServ(-1);
+  $('#sPlus').onclick = () => setServ(1);
+  $('#ingList').onclick = e => { const li = e.target.closest('li'); if (li && !li.classList.contains('sub')) li.classList.toggle('done'); };
+  $('#stepList')?.addEventListener('click', e => { const li = e.target.closest('li'); if (li) li.classList.toggle('done'); });
+  $('#rate').onclick = async e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const v = +b.dataset.v; r.rating = r.rating === v ? 0 : v;
+    await saveRecipe(r);
+    $$('#rate button').forEach(x => x.classList.toggle('on', +x.dataset.v <= r.rating));
+    toast(r.rating ? `Bewertung: ${r.rating} von 5 Sternen` : 'Bewertung entfernt');
+  };
+  $('#cooked').onclick = async () => { r.last_cooked = todayISO(); await saveRecipe(r); renderDetail(app, id); toast('Als heute gekocht gespeichert 👩‍🍳'); };
+  $('#toShop').onclick = async () => { addToShop(r, state.servings[id] || base); await saveShop(); { const c = state.servings[id] || base; toast(`Zutaten für ${c} ${c === 1 ? 'Portion' : 'Portionen'} hinzugefügt 🛒`); }; };
+  $('#del').onclick = async () => {
+    if (!confirm(`„${r.title}“ wirklich löschen?`)) return;
+    await deleteRecipe(id); toast('Rezept gelöscht'); location.hash = '#/';
+  };
+  $('#share').onclick = async () => {
+    const url = location.href;
+    try { if (navigator.share) { await navigator.share({ title: r.title, url }); return; } } catch (e) { if (e.name === 'AbortError') return; }
+    try { await navigator.clipboard.writeText(url); toast('Link kopiert 📋'); } catch (e) { prompt('Link zum Kopieren:', url); }
+  };
+  $('#wake')?.addEventListener('click', async e => {
+    try {
+      if (state.wakeLock) { await state.wakeLock.release(); state.wakeLock = null; e.target.textContent = '🔆 Bildschirm anlassen'; return; }
+      state.wakeLock = await navigator.wakeLock.request('screen');
+      e.target.textContent = '🌙 Bildschirm darf ausgehen';
+      toast('Der Bildschirm bleibt jetzt an.');
+    } catch (err) { toast('Das unterstützt dieser Browser leider nicht.'); }
+  });
+}
+
+/* =========================================================
+   Einkaufsliste
+   ========================================================= */
+function addToShop(r, servings) {
+  const f = servings / (r.servings || 1);
+  for (const line of r.ingredients) {
+    if (isSubHeading(line)) continue;
+    const p = parseIngredient(line);
+    let qty = p.qty == null ? null : (p.qty2 ?? p.qty) * f;
+    const name = p.name || p.raw;
+    const key = norm(p.unit) + '|' + norm(name).replace(/\s+/g, ' ').trim();
+    const ex = state.shop.find(i => !i.done && i.key === key);
+    if (ex) {
+      if (qty != null) ex.qty = (ex.qty || 0) + qty;
+      if (!ex.sources.includes(r.title)) ex.sources.push(r.title);
+    } else {
+      state.shop.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), key, qty, unit: p.unit, name, sources: [r.title], done: false });
+    }
+  }
+}
+const shopText = i => [fmtQty(i.qty), i.unit, i.name].filter(Boolean).join(' ');
+
+function renderShop(app) {
+  $('#pageTitle').textContent = 'Einkaufsliste';
+  const open = state.shop.filter(i => !i.done), done = state.shop.filter(i => i.done);
+  const item = i => `<li data-id="${i.id}" class="${i.done ? 'done' : ''}"><span class="box"></span>
+      <span class="txt">${esc(shopText(i))}${i.sources.length ? `<span class="src">${esc(i.sources.join(', '))}</span>` : ''}</span>
+      <button class="del" data-del="${i.id}" aria-label="Entfernen">✕</button></li>`;
+  app.innerHTML = `
+    <form class="shop-add" id="shopForm">
+      <label class="sr-only" for="shopIn">Artikel</label>
+      <input type="text" id="shopIn" placeholder="Artikel hinzufügen, z. B. 1 l Milch" autocomplete="off">
+      <button class="btn primary" type="submit" aria-label="Hinzufügen">+</button>
+    </form>
+    <button class="btn block" id="pick">📖 Zutaten aus Rezepten übernehmen</button>
+    <div style="height:14px"></div>
+    ${state.shop.length ? '' : `<div class="empty"><div class="big">🛒</div><p>Deine Einkaufsliste ist leer.<br>Öffne ein Rezept und tippe auf „Zutaten auf die Einkaufsliste“.</p></div>`}
+    ${open.length ? `<ul class="shop-list" id="openList">${open.map(item).join('')}</ul>` : ''}
+    ${done.length ? `<h2 style="font-size:16px;margin:20px 4px 8px" class="muted">Erledigt (${done.length})</h2><ul class="shop-list">${done.map(item).join('')}</ul>` : ''}
+    ${state.shop.length ? `<div class="btn-row">
+      <button class="btn" id="copyShop">📤 Liste teilen</button>
+      ${done.length ? '<button class="btn" id="clearDone">Erledigte entfernen</button>' : ''}
+      <button class="btn danger" id="clearAll">Alles löschen</button></div>` : ''}`;
+
+  $('#shopForm').onsubmit = async e => {
+    e.preventDefault();
+    const v = $('#shopIn').value.trim(); if (!v) return;
+    const p = parseIngredient(v);
+    state.shop.push({ id: Date.now().toString(36), key: norm(p.unit) + '|' + norm(p.name || v), qty: p.qty, unit: p.unit, name: p.name || v, sources: [], done: false });
+    await saveShop(); renderShop(app); $('#shopIn').focus();
+  };
+  app.onclick = async e => {
+    if (location.hash !== '#/shop') return;
+    const del = e.target.closest('[data-del]');
+    if (del) { state.shop = state.shop.filter(i => i.id !== del.dataset.del); await saveShop(); renderShop(app); return; }
+    const li = e.target.closest('.shop-list li');
+    if (li) { const i = state.shop.find(x => x.id === li.dataset.id); if (i) { i.done = !i.done; await saveShop(); renderShop(app); } }
+  };
+  $('#pick').onclick = openPicker;
+  $('#clearDone')?.addEventListener('click', async () => { state.shop = state.shop.filter(i => !i.done); await saveShop(); renderShop(app); });
+  $('#clearAll')?.addEventListener('click', async () => { if (!confirm('Ganze Einkaufsliste löschen?')) return; state.shop = []; await saveShop(); renderShop(app); });
+  $('#copyShop')?.addEventListener('click', async () => {
+    const text = 'Einkaufsliste:\n' + open.map(i => '• ' + shopText(i)).join('\n');
+    try { if (navigator.share) { await navigator.share({ title: 'Einkaufsliste', text }); return; } } catch (e) { if (e.name === 'AbortError') return; }
+    try { await navigator.clipboard.writeText(text); toast('Liste kopiert 📋'); } catch (e) { prompt('Liste zum Kopieren:', text); }
+  });
+}
+
+function openPicker() {
+  const dlg = $('#pickDlg');
+  const list = [...state.recipes].sort((a, b) => a.title.localeCompare(b.title, 'de'));
+  $('#pickList').innerHTML = list.length ? list.map(r => `<label class="pick"><input type="checkbox" value="${esc(r.id)}"><span>${esc(r.title)} <span class="hint">· ${r.servings} Port.</span></span></label>`).join('')
+    : '<p class="muted">Noch keine Rezepte vorhanden.</p>';
+  dlg.showModal();
+}
+$('#pickDlg').addEventListener('click', e => { if (e.target.closest('[data-close]') || e.target === e.currentTarget) $('#pickDlg').close(); });
+$('#pickOk').addEventListener('click', async () => {
+  const ids = $$('#pickList input:checked').map(i => i.value);
+  if (!ids.length) { toast('Bitte mindestens ein Rezept auswählen.'); return; }
+  ids.forEach(id => { const r = byId(id); if (r) addToShop(r, r.servings); });
+  await saveShop(); $('#pickDlg').close();
+  toast(`Zutaten aus ${ids.length} Rezept${ids.length > 1 ? 'en' : ''} hinzugefügt`);
+  if (location.hash === '#/shop') renderShop($('#app'));
+});
+
+/* =========================================================
+   Formular: Neu / Bearbeiten
+   ========================================================= */
+function parseRecipeText(text) {
+  const out = { ingredients: [], steps: [], notes: [] };
+  const url = text.match(/https?:\/\/[^\s<>"')]+/);
+  if (url) out.source_url = url[0];
+  const toMin = (n, u) => Math.round(parseFloat(String(n).replace(',', '.')) * (/^(std|stunde|h)/i.test(u) ? 60 : 1));
+  const TIME = String.raw`\s*:?\s*(?:ca\.?\s*)?(\d+(?:[.,]\d+)?)\s*(min(?:uten|\.)?|std\.?|stunden?|h)\b`;
+  const reServ = /(?:für|portionen|personen|servings|ergibt)\s*:?\s*(\d+)|(\d+)\s*(?:portionen|portion|personen|person|servings)\b/i;
+  const rePrep = new RegExp(String.raw`(vorbereitung(?:szeit)?|arbeitszeit|zubereitungszeit|prep(?:aration)?(?:\s*time)?)` + TIME, 'i');
+  const reCook = new RegExp(String.raw`(koch(?:zeit)?|back(?:zeit)?|garzeit|cook(?:ing)?(?:\s*time)?)` + TIME, 'i');
+  const reTotal = new RegExp(String.raw`(gesamtzeit|gesamt|total(?:\s*time)?)` + TIME, 'i');
+  const reKcal = /(\d+(?:[.,]\d+)?)\s*kcal|(?:kalorien|brennwert|calories)\s*:?\s*(\d+(?:[.,]\d+)?)/i;
+  const reProt = /(?:eiwei(?:ß|ss)|protein)\s*:?\s*(\d+(?:[.,]\d+)?)/i;
+  const reFat = /\b(?:fett|fat)\s*:?\s*(\d+(?:[.,]\d+)?)/i;
+  const reCarb = /(?:kohlenhydrate|\bkh\b|carbs|carbohydrates)\s*:?\s*(\d+(?:[.,]\d+)?)/i;
+  const reDiff = /schwierigkeit(?:sgrad)?\s*:?\s*(einfach|leicht|simpel|normal|mittel|schwer|anspruchsvoll|pfiffig)/i;
+  let m;
+  if ((m = text.match(reServ))) out.servings = +(m[1] || m[2]);
+  if ((m = text.match(rePrep))) out.prep_time = toMin(m[2], m[3]);
+  if ((m = text.match(reCook))) out.cook_time = toMin(m[2], m[3]);
+  if (!out.prep_time && !out.cook_time && (m = text.match(reTotal))) out.cook_time = toMin(m[2], m[3]);
+  out.nutrition = {};
+  if ((m = text.match(reKcal))) out.nutrition.calories = num(m[1] || m[2]);
+  if ((m = text.match(reProt))) out.nutrition.protein = num(m[1]);
+  if ((m = text.match(reFat))) out.nutrition.fat = num(m[1]);
+  if ((m = text.match(reCarb))) out.nutrition.carbs = num(m[1]);
+  if ((m = text.match(reDiff))) out.difficulty = /einfach|leicht|simpel/i.test(m[1]) ? 'einfach' : /schwer|anspruchsvoll|pfiffig/i.test(m[1]) ? 'schwer' : 'mittel';
+
+  const H_ING = /^(zutaten|ingredients|einkaufsliste|du brauchst|das brauchst du)\b/i;
+  const H_STEP = /^(zubereitung|anleitung|so geht'?s|so wird'?s gemacht|schritte|arbeitsschritte|instructions|directions|method|preparation|steps)\b/i;
+  const H_NOTE = /^(notizen?|tipps?|hinweise?|anmerkungen?|notes?|tips?)\b/i;
+  const isMeta = l => l.length < 90 && [reServ, rePrep, reCook, reTotal, reKcal, reProt, reFat, reCarb, reDiff].some(re => re.test(l)) && !QTY_RE.test(l.replace(/^[-•*·]\s*/, '')) ;
+  let mode = null;
+  for (let l of text.split(/\r?\n/)) {
+    l = l.trim().replace(/\s+/g, ' ');
+    if (!l) continue;
+    if (/^https?:\/\/\S+$/.test(l)) continue;
+    const plain = l.replace(/^#+\s*/, '').replace(/^\*\*(.*)\*\*$/, '$1');
+    if (plain.length < 45 && H_ING.test(plain)) { mode = 'ing'; continue; }
+    if (plain.length < 45 && H_STEP.test(plain)) { mode = 'step'; continue; }
+    if (plain.length < 45 && H_NOTE.test(plain)) { mode = 'note'; const rest = plain.replace(H_NOTE, '').replace(/^\s*:\s*/, ''); if (rest) out.notes.push(rest); continue; }
+    if (/^(nährwert|naehrwert|nutrition|kalorien|brennwert)/i.test(plain)) continue;
+    if (!out.title && !isMeta(plain)) { out.title = plain.replace(/\s*[-|–]\s*(rezept|chefkoch).*$/i, ''); continue; }
+    if (mode !== 'note' && mode !== 'step' && isMeta(plain)) continue;
+    const numbered = /^(\d+[.)]|schritt\s*\d+\s*:?)\s+/i.test(plain);
+    const clean = plain.replace(/^([-•*·–▢☐□✓▪︎]|\d+[.)]|schritt\s*\d+\s*:?)\s*/i, '');
+    if (!clean) continue;
+    if (mode === 'ing') out.ingredients.push(clean);
+    else if (mode === 'step') out.steps.push(clean);
+    else if (mode === 'note') out.notes.push(plain);
+    else if (numbered) out.steps.push(clean);
+    else if (QTY_RE.test(clean) && clean.length < 70) out.ingredients.push(clean);
+    else if (clean.length >= 40) out.steps.push(clean);
+    else out.ingredients.push(clean);
+  }
+  return out;
+}
+
+function resizeImage(file, max = 1000, quality = 0.75) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      res(c.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('Bild konnte nicht gelesen werden')); };
+    img.src = url;
+  });
+}
+
+function renderForm(app, r) {
+  const isNew = !r;
+  $('#pageTitle').textContent = isNew ? 'Neues Rezept' : 'Bearbeiten';
+  r = r ? normalizeRecipe(JSON.parse(JSON.stringify(r))) : null;
+  let image = r?.image || '';
+  let rating = r?.rating || 0;
+  const v = (k, d = '') => esc(r ? (r[k] ?? d) : d);
+  const n = r?.nutrition || {};
+  const prefill = state.prefillUrl; state.prefillUrl = '';
+
+  app.innerHTML = `
+    ${isNew ? `
+    <details class="panel" ${prefill ? 'open' : ''} id="ghBox">
+      <summary>🔗 Rezept-Link automatisch importieren</summary>
+      <p class="hint">Füge den Link einer Rezeptseite ein. Es öffnet sich GitHub mit einem vorbereiteten „Issue“ – dort nur noch auf <b>Submit new issue</b> tippen. Nach 1–2 Minuten ist das Rezept in der App.</p>
+      <input type="url" id="ghUrl" placeholder="https://…" value="${esc(prefill)}">
+      <div class="btn-row"><button type="button" class="btn primary" id="ghGo">Auf GitHub importieren</button></div>
+    </details>
+    <details class="panel" id="pasteBox">
+      <summary>📋 Rezepttext einfügen & automatisch ausfüllen</summary>
+      <p class="hint">Kopiere ein Rezept (z. B. von einer Webseite, aus einer Nachricht oder einem Dokument) und füge es hier ein. Die App versucht, Titel, Zutaten, Schritte, Zeiten und Nährwerte zu erkennen. Prüfe danach die Felder.</p>
+      <textarea id="pasteText" placeholder="Rezepttext hier einfügen …" style="min-height:160px"></textarea>
+      <div class="btn-row">
+        ${navigator.clipboard?.readText ? '<button type="button" class="btn" id="pasteClip">Aus Zwischenablage</button>' : ''}
+        <button type="button" class="btn primary" id="pasteGo">Felder ausfüllen</button>
+      </div>
+    </details>` : ''}
+
+    <form id="recForm" novalidate>
+      <div class="panel">
+        <label class="field"><span>Titel *</span><input type="text" name="title" required value="${v('title')}" placeholder="z. B. Omas Apfelkuchen"></label>
+        <label class="field"><span>Quelle * <small>– Link zur Originalseite oder z. B. „Kochbuch Seite 42“ / „Eigenes Rezept“</small></span>
+          <input type="text" name="source_url" required value="${v('source_url')}" placeholder="https://…" inputmode="url"></label>
+        <div class="field"><span style="display:block;font-weight:650;font-size:15px;margin-bottom:6px">Foto</span>
+          <div class="img-edit">
+            <div class="preview" id="imgPrev"></div>
+            <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-width:180px">
+              <label class="btn small">📷 Foto wählen<input type="file" accept="image/*" id="imgFile" hidden></label>
+              <button type="button" class="btn small danger" id="imgDel">Foto entfernen</button>
+            </div>
+          </div>
+          <input type="url" id="imgUrl" placeholder="… oder Bild-Adresse (https://…)" style="margin-top:10px" value="${esc(isUrl(image) ? image : '')}">
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="grid2">
+          <label class="field"><span>Portionen</span><input type="number" name="servings" min="1" max="99" inputmode="numeric" value="${r ? r.servings : 2}"></label>
+          <label class="field"><span>Schwierigkeit</span><select name="difficulty">
+            <option value="">–</option>${Object.entries(DIFF).map(([k, l]) => `<option value="${k}" ${r?.difficulty === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+          <label class="field"><span>Vorbereitung <small>(Min.)</small></span><input type="number" name="prep_time" min="0" inputmode="numeric" value="${r?.prep_time || ''}"></label>
+          <label class="field"><span>Kochzeit <small>(Min.)</small></span><input type="number" name="cook_time" min="0" inputmode="numeric" value="${r?.cook_time || ''}"></label>
+        </div>
+        <div class="field"><span style="display:block;font-weight:650;font-size:15px;margin-bottom:6px">Bewertung</span>
+          <div class="stars-input" id="starIn">${[1, 2, 3, 4, 5].map(i => `<button type="button" data-v="${i}" aria-label="${i} Sterne">★</button>`).join('')}</div></div>
+        <label class="field"><span>Tags <small>– mit Komma trennen, z. B. Pasta, schnell, vegetarisch</small></span><input type="text" name="tags" value="${esc(r ? r.tags.join(', ') : '')}"></label>
+        <label class="field"><span>Zuletzt gekocht</span><input type="date" name="last_cooked" value="${v('last_cooked')}"></label>
+      </div>
+
+      <div class="panel">
+        <label class="field"><span>Zutaten <small>– eine pro Zeile, Menge vorne (z. B. „200 g Mehl“). Zeilen mit „:“ am Ende werden Zwischenüberschriften.</small></span>
+          <textarea name="ingredients" style="min-height:180px" placeholder="200 g Mehl&#10;2 Eier&#10;1 Prise Salz">${esc(r ? r.ingredients.join('\n') : '')}</textarea></label>
+        <label class="field"><span>Zubereitung <small>– ein Schritt pro Zeile</small></span>
+          <textarea name="steps" style="min-height:200px" placeholder="Ofen auf 180 °C vorheizen.&#10;Mehl und Eier verrühren.">${esc(r ? r.steps.join('\n') : '')}</textarea></label>
+      </div>
+
+      <div class="panel">
+        <h2>Nährwerte pro Portion <small class="hint">(optional)</small></h2>
+        <div class="grid4">
+          <label class="field"><span>Kalorien</span><input type="number" step="any" min="0" inputmode="decimal" name="calories" value="${n.calories ?? ''}" placeholder="kcal"></label>
+          <label class="field"><span>Eiweiß</span><input type="number" step="any" min="0" inputmode="decimal" name="protein" value="${n.protein ?? ''}" placeholder="g"></label>
+          <label class="field"><span>Fett</span><input type="number" step="any" min="0" inputmode="decimal" name="fat" value="${n.fat ?? ''}" placeholder="g"></label>
+          <label class="field"><span>Kohlenh.</span><input type="number" step="any" min="0" inputmode="decimal" name="carbs" value="${n.carbs ?? ''}" placeholder="g"></label>
+        </div>
+      </div>
+
+      <div class="panel">
+        <label class="field"><span>Eigene Notizen</span><textarea name="notes" placeholder="z. B. Weniger Zucker nehmen, schmeckt auch mit Birnen …">${v('notes')}</textarea></label>
+      </div>
+
+      <div class="btn-row sticky-save">
+        <button type="submit" class="btn primary block">💾 Speichern</button>
+      </div>
+      <div class="btn-row">
+        <a class="btn" href="${isNew ? '#/' : '#/r/' + encodeURIComponent(r.id)}">Abbrechen</a>
+        ${isNew ? '' : '<button type="button" class="btn danger" id="formDel">🗑 Löschen</button>'}
+      </div>
+    </form>`;
+
+  const form = $('#recForm'), F = form.elements;
+  const prevBox = $('#imgPrev');
+  const showPrev = () => {
+    prevBox.innerHTML = imageHtml({ title: F.title.value || 'x', tags: [], image });
+    $('#imgDel').hidden = !image;
+  };
+  const showStars = () => $$('#starIn button').forEach(b => b.classList.toggle('on', +b.dataset.v <= rating));
+  showPrev(); showStars();
+
+  $('#starIn').onclick = e => { const b = e.target.closest('button'); if (!b) return; rating = rating === +b.dataset.v ? 0 : +b.dataset.v; showStars(); };
+  $('#imgFile').onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try { image = await resizeImage(f); $('#imgUrl').value = ''; showPrev(); toast('Foto verkleinert und übernommen'); }
+    catch (err) { toast('⚠️ ' + err.message); }
+  };
+  $('#imgUrl').onchange = e => { const u = e.target.value.trim(); if (u) { image = u; showPrev(); } };
+  $('#imgDel').onclick = () => { image = ''; $('#imgUrl').value = ''; showPrev(); };
+
+  if (isNew) {
+    $('#ghGo').onclick = () => {
+      const link = $('#ghUrl').value.trim();
+      if (!isUrl(link)) { toast('Bitte einen vollständigen Link mit https:// einfügen.'); return; }
+      const dup = state.recipes.find(x => isUrl(x.source_url) && normalizeUrl(x.source_url) === normalizeUrl(link));
+      if (dup && !confirm(`Dieses Rezept ist schon vorhanden („${dup.title}“). Trotzdem importieren?`)) return;
+      const u = issueUrl(link);
+      if (!u) { toast('Bitte zuerst unter „Mehr“ dein GitHub-Repository eintragen.', 4000); return; }
+      window.open(u, '_blank', 'noopener');
+    };
+    $('#pasteClip')?.addEventListener('click', async () => {
+      try { $('#pasteText').value = await navigator.clipboard.readText(); toast('Eingefügt'); }
+      catch (e) { toast('Kein Zugriff auf die Zwischenablage – bitte lange ins Feld tippen und „Einfügen“ wählen.', 4500); }
+    });
+    $('#pasteGo').onclick = () => {
+      const text = $('#pasteText').value.trim();
+      if (!text) { toast('Bitte zuerst Text einfügen.'); return; }
+      const p = parseRecipeText(text);
+      if (p.title) F.title.value = p.title;
+      if (p.source_url) F.source_url.value = p.source_url;
+      if (p.servings) F.servings.value = p.servings;
+      if (p.prep_time) F.prep_time.value = p.prep_time;
+      if (p.cook_time) F.cook_time.value = p.cook_time;
+      if (p.difficulty) F.difficulty.value = p.difficulty;
+      if (p.ingredients.length) F.ingredients.value = p.ingredients.join('\n');
+      if (p.steps.length) F.steps.value = p.steps.join('\n');
+      if (p.notes.length) F.notes.value = p.notes.join('\n');
+      for (const k of ['calories', 'protein', 'fat', 'carbs']) if (p.nutrition[k] != null) F[k].value = p.nutrition[k];
+      $('#pasteBox').open = false;
+      toast(`Erkannt: ${p.ingredients.length} Zutaten, ${p.steps.length} Schritte – bitte prüfen`, 4000);
+      F.title.focus();
+    };
+  }
+
+  form.onsubmit = async e => {
+    e.preventDefault();
+    const title = F.title.value.trim(), source = F.source_url.value.trim();
+    if (!title) { toast('Bitte einen Titel eingeben.'); F.title.focus(); return; }
+    if (!source) { toast('Bitte eine Quelle angeben (Link oder z. B. „Eigenes Rezept“).', 4000); F.source_url.focus(); return; }
+    if (isUrl(source)) {
+      const dup = state.recipes.find(x => x.id !== r?.id && isUrl(x.source_url) && normalizeUrl(x.source_url) === normalizeUrl(source));
+      if (dup && !confirm(`Es gibt schon ein Rezept mit dieser Quelle („${dup.title}“). Trotzdem speichern?`)) return;
+    }
+    const lines = s => s.split('\n').map(x => x.trim()).filter(Boolean);
+    const rec = await saveRecipe({
+      id: r?.id || makeId(title), title, source_url: source, image,
+      servings: F.servings.value, prep_time: F.prep_time.value, cook_time: F.cook_time.value,
+      difficulty: F.difficulty.value, rating,
+      tags: [...new Set(F.tags.value.split(',').map(t => t.trim()).filter(Boolean))],
+      ingredients: lines(F.ingredients.value), steps: lines(F.steps.value),
+      nutrition: { calories: num(F.calories.value), protein: num(F.protein.value), fat: num(F.fat.value), carbs: num(F.carbs.value) },
+      notes: F.notes.value.trim(), last_cooked: F.last_cooked.value, added_at: r?.added_at
+    });
+    delete state.servings[rec.id];
+    toast('Gespeichert ✅');
+    location.hash = '#/r/' + encodeURIComponent(rec.id);
+  };
+  $('#formDel')?.addEventListener('click', async () => {
+    if (!confirm(`„${r.title}“ wirklich löschen?`)) return;
+    await deleteRecipe(r.id); toast('Rezept gelöscht'); location.hash = '#/';
+  });
+}
+
+/* =========================================================
+   Ansicht: Mehr (Einstellungen, Backup)
+   ========================================================= */
+function renderMore(app) {
+  $('#pageTitle').textContent = 'Mehr';
+  const theme = localStorage.getItem('rz_theme') || 'auto';
+  const localCount = Object.keys(state.local.recipes).length, delCount = state.local.deleted.length;
+  const detected = getRepo();
+  app.innerHTML = `
+    <section class="panel">
+      <h2>Darstellung</h2>
+      <div class="seg" id="theme">
+        <button data-t="auto">Automatisch</button><button data-t="light">☀️ Hell</button><button data-t="dark">🌙 Dunkel</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Backup</h2>
+      <p class="hint">Speichert alle Rezepte (inkl. deiner Änderungen und Fotos) als Datei <b>recipes.json</b>. Diese Datei kannst du später wieder importieren – oder auf GitHub hochladen, um deine Änderungen dauerhaft und für alle sichtbar zu machen (siehe Anleitung).</p>
+      <div class="btn-row"><button class="btn primary" id="exp">⬇️ Backup exportieren</button></div>
+      <label class="btn block">⬆️ Backup importieren<input type="file" id="impFile" accept=".json,application/json" hidden></label>
+      <p class="hint" style="margin-top:10px">Beim Import kannst du wählen: Rezepte <b>ergänzen</b> oder alles <b>ersetzen</b>.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Auf diesem Gerät</h2>
+      <p>${state.remote.length} Rezepte aus GitHub · ${localCount} hier hinzugefügt/geändert · ${delCount} hier gelöscht</p>
+      <p class="hint">Änderungen, die du in der App machst (neue Rezepte, Bewertungen, Notizen, Fotos …), werden <b>nur auf diesem Gerät</b> gespeichert. Damit sie nicht verloren gehen, exportiere regelmäßig ein Backup.</p>
+      ${localCount || delCount ? '<button class="btn danger block" id="resetLocal">Änderungen auf diesem Gerät verwerfen</button>' : ''}
+    </section>
+
+    <section class="panel">
+      <h2>GitHub-Verbindung</h2>
+      <p class="hint">Wird für „Rezept-Link automatisch importieren“ gebraucht. Normalerweise automatisch erkannt.</p>
+      <label class="field"><span>Repository <small>(Benutzername/Repository-Name)</small></span>
+        <input type="text" id="repo" value="${esc(state.settings.repo)}" placeholder="${esc(detected || 'z. B. anna/rezepte')}" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+      ${detected ? `<p class="hint">Aktuell: <a href="https://github.com/${esc(detected)}" target="_blank" rel="noopener">github.com/${esc(detected)}</a></p>` : ''}
+    </section>
+
+    <section class="panel">
+      <h2>Über die App</h2>
+      <p class="hint">Meine Rezepte · Version 1.0 · Läuft komplett im Browser. Neue Rezepte aus GitHub erscheinen automatisch, sobald die Seite neu geladen wird.</p>
+      <button class="btn block" id="reload">🔄 Neu laden</button>
+    </section>`;
+
+  const segs = $$('#theme button');
+  const mark = t => segs.forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  mark(theme);
+  $('#theme').onclick = e => { const b = e.target.closest('button'); if (!b) return; setTheme(b.dataset.t); mark(b.dataset.t); };
+  $('#exp').onclick = exportBackup;
+  $('#impFile').onchange = e => { const f = e.target.files[0]; if (f) importBackup(f); e.target.value = ''; };
+  $('#repo').onchange = async e => { state.settings.repo = e.target.value.trim(); await Store.set('settings', state.settings); toast('Gespeichert'); };
+  $('#resetLocal')?.addEventListener('click', async () => {
+    if (!confirm('Alle Änderungen auf diesem Gerät verwerfen? Danach siehst du wieder genau die Rezepte aus GitHub. Tipp: Vorher ein Backup exportieren!')) return;
+    state.local = { recipes: {}, deleted: [] }; await saveLocal(); rebuild(); renderMore(app); toast('Zurückgesetzt');
+  });
+  $('#reload').onclick = () => location.reload();
+}
+
+function setTheme(t) {
+  try { t === 'auto' ? localStorage.removeItem('rz_theme') : localStorage.setItem('rz_theme', t); } catch (e) {}
+  if (t === 'auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
+  updateThemeColor();
+}
+function updateThemeColor() {
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+  $('meta[name="theme-color"]').setAttribute('content', bg || '#faf7f2');
+}
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', updateThemeColor);
+
+async function exportBackup() {
+  const data = [...state.recipes].sort((a, b) => String(a.added_at).localeCompare(String(b.added_at)));
+  const json = JSON.stringify(data, null, 2) + '\n';
+  const file = new File([json], 'recipes.json', { type: 'application/json' });
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] }) && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
+      await navigator.share({ files: [file], title: 'recipes.json' }); return;
+    }
+  } catch (e) { if (e.name === 'AbortError') return; }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(file); a.download = 'recipes.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  toast(`${data.length} Rezepte exportiert`);
+}
+
+async function importBackup(file) {
+  let data;
+  try { data = JSON.parse(await file.text()); } catch (e) { toast('⚠️ Die Datei ist keine gültige JSON-Datei.', 4000); return; }
+  const list = Array.isArray(data) ? data : Array.isArray(data?.recipes) ? data.recipes : null;
+  if (!list) { toast('⚠️ In der Datei wurden keine Rezepte gefunden.', 4000); return; }
+  const recs = list.filter(x => x && x.title).map(normalizeRecipe);
+  if (!recs.length) { toast('⚠️ In der Datei wurden keine Rezepte gefunden.', 4000); return; }
+  const replace = confirm(`${recs.length} Rezepte gefunden.\n\nOK = ALLES ERSETZEN (deine aktuellen Rezepte auf diesem Gerät werden durch die Datei ersetzt)\nAbbrechen = nur ERGÄNZEN (neue Rezepte hinzufügen, gleiche aktualisieren)`);
+  if (replace) {
+    const ids = new Set(recs.map(r => r.id));
+    state.local = { recipes: {}, deleted: state.remote.map(r => r.id).filter(id => !ids.has(id)) };
+  }
+  for (const r of recs) { state.local.recipes[r.id] = r; state.local.deleted = state.local.deleted.filter(x => x !== r.id); }
+  await saveLocal(); rebuild();
+  toast(`${recs.length} Rezepte importiert ✅`, 3500);
+  renderMore($('#app'));
+}
+
+/* =========================================================
+   Start
+   ========================================================= */
+async function init() {
+  updateThemeColor();
+  const [local, shop, settings] = await Promise.all([Store.get('local'), Store.get('shop'), Store.get('settings')]);
+  if (local && local.recipes) state.local = { recipes: local.recipes, deleted: local.deleted || [] };
+  if (Array.isArray(shop)) state.shop = shop;
+  if (settings) state.settings = { ...state.settings, ...settings };
+  try {
+    const res = await fetch('recipes.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    state.remote = (Array.isArray(data) ? data : data.recipes || []).filter(x => x && x.title).map(normalizeRecipe);
+  } catch (e) { state.remoteOk = false; }
+  rebuild();
+
+  // Geteilter Link (Android: "Teilen" → "Rezepte")
+  const qp = new URLSearchParams(location.search);
+  if (qp.has('url') || qp.has('text') || qp.has('title')) {
+    const all = [qp.get('url'), qp.get('text'), qp.get('title')].filter(Boolean).join(' ');
+    const m = all.match(/https?:\/\/[^\s]+/);
+    history.replaceState(null, '', location.pathname + '#/new');
+    if (m) state.prefillUrl = m[0];
+  }
+  window.addEventListener('hashchange', route);
+  route();
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+init();
+</script>
+</body>
+</html>
