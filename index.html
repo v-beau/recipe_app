@@ -227,6 +227,9 @@ table.nut thead th { font-size: 13px; color: var(--muted); font-weight: 600; }
   display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 750; margin: 0; padding: 18px 4px 8px;
 }
 .cat-h span { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--muted); background: var(--card-2); border-radius: 10px; padding: 1px 9px; }
+.shop-list.pantry { opacity: .85; border-style: dashed; }
+.chip-x { display: inline-flex; align-items: center; gap: 6px; }
+.chips-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
 .shop-list li .mini { background: var(--card-2); border: 0; border-radius: 10px; width: 40px; height: 40px; font-size: 18px; cursor: pointer; flex: none; }
 .opt { display: block; width: 100%; text-align: left; min-height: 54px; padding: 12px 6px; background: none; border: 0; border-bottom: 1px solid var(--border); font-size: 17px; cursor: pointer; }
 .opt:last-child { border-bottom: 0; }
@@ -263,6 +266,12 @@ table.nut thead th { font-size: 13px; color: var(--muted); font-weight: 600; }
 .set-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .stepper { display: flex; align-items: center; gap: 10px; flex: none; }
 .stepper b { min-width: 2ch; text-align: center; font-size: 20px; }
+
+/* Was koche ich mit */
+.cook-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; margin: 10px 0; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 8px; }
+.cook-card .miss { font-size: 14px; color: var(--accent); }
+.cook-card .ok { font-size: 14px; color: var(--green); font-weight: 700; }
+.cook-card .btn { align-self: flex-start; }
 
 /* Dialog */
 dialog { border: 0; border-radius: 20px; padding: 0; width: min(560px, calc(100vw - 24px)); max-height: 85vh; background: var(--card); color: var(--text); box-shadow: 0 20px 60px rgba(0,0,0,.35); }
@@ -491,6 +500,7 @@ const state = {
   local: { recipes: {}, deleted: [] },   // Änderungen auf diesem Gerät
   lists: [], activeList: '',
   plan: {}, planOffset: 0,
+  have: [], haveUsePantry: true,
   settings: { repo: '' },
   recipes: [],
   filter: { q: '', tags: new Set(), sort: 'new' },
@@ -572,7 +582,7 @@ function route() {
   if (state.wakeLock) { state.wakeLock.release().catch(() => {}); state.wakeLock = null; }
   const parts = (location.hash.slice(1) || '/').split('/').filter(Boolean);
   const view = parts[0] || 'list', id = parts[1] ? decodeURIComponent(parts[1]) : '';
-  const navKey = { list: 'list', r: 'list', plan: 'plan', shop: 'shop', new: 'new', edit: 'new', more: 'more' }[view] || 'list';
+  const navKey = { list: 'list', r: 'list', cook: 'list', plan: 'plan', shop: 'shop', new: 'new', edit: 'new', more: 'more' }[view] || 'list';
   $$('nav.bottom a').forEach(a => a.classList.toggle('active', a.dataset.nav === navKey));
   const app = $('#app');
   if (view === 'r') renderDetail(app, id);
@@ -580,6 +590,7 @@ function route() {
   else if (view === 'edit') renderForm(app, byId(id));
   else if (view === 'shop') renderShop(app);
   else if (view === 'plan') renderPlan(app);
+  else if (view === 'cook') renderCook(app);
   else if (view === 'more') renderMore(app);
   else { renderList(app); requestAnimationFrame(() => window.scrollTo(0, state.listScroll)); return; }
   window.scrollTo(0, 0);
@@ -611,6 +622,7 @@ function renderList(app) {
       <button class="chip ${f.tags.size ? '' : 'on'}" data-tag="">Alle</button>
       ${tags.map(t => `<button class="chip ${f.tags.has(t) ? 'on' : ''}" data-tag="${esc(t)}">${esc(t)}</button>`).join('')}
     </div>` : ''}
+    <a class="btn block" href="#/cook" style="margin:2px 0 12px">🥕 Was koche ich mit …?${state.have.length ? ` <span class="hint">(${state.have.length} Zutaten)</span>` : ''}</a>
     <div id="results"></div>`;
   $('#sort').value = f.sort;
   $('#q').addEventListener('input', e => { f.q = e.target.value; renderResults(); });
@@ -850,32 +862,71 @@ function createList(name) {
   state.lists.push(l); state.activeList = l.id; return l;
 }
 async function saveShop() { await Store.set('lists', { lists: state.lists, active: state.activeList }); updateShopBadge(); }
+/* Vorratsschrank: Zutaten, die man immer zu Hause hat */
+const DEFAULT_PANTRY = ['Salz', 'Pfeffer', 'Öl', 'Zucker', 'Mehl', 'Backpulver', 'Essig'];
+const pantryList = () => Array.isArray(state.settings.pantry) ? state.settings.pantry : DEFAULT_PANTRY;
+function isPantryName(name) {
+  const cn = cleanName(name), words = cn.split(/[\s\-\/]+/).filter(Boolean);
+  return pantryList().some(t => {
+    const n = norm(t).trim();
+    if (!n) return false;
+    if (n.includes(' ')) return cn.includes(n);
+    // ganzes Wort – oder Ende eines zusammengesetzten Wortes (Öl → Olivenöl, Brühe → Gemüsebrühe)
+    return words.some(w => w === n || (w.endsWith(n) && w.length >= n.length + 3));
+  });
+}
+const pantryHit = i => !i.done && !i.buy && isPantryName(i.name);
+async function addToPantry(name) {
+  const label = String(name).replace(/\(.*?\)/g, '').split(',')[0].trim();
+  if (!label) return;
+  const list = [...pantryList()];
+  if (!list.some(x => norm(x) === norm(label))) list.push(label);
+  state.settings.pantry = list; await Store.set('settings', state.settings);
+}
+
 function updateShopBadge() {
-  const n = state.lists.reduce((s, l) => s + l.items.filter(i => !i.done).length, 0), b = $('#shopBadge');
+  const n = state.lists.reduce((s, l) => s + l.items.filter(i => !i.done && !pantryHit(i)).length, 0), b = $('#shopBadge');
   b.hidden = !n; b.textContent = n;
 }
+
+/* Einheiten umrechnen: Gewicht (g), Volumen (ml), Löffel (TL) */
+const UNIT_DIM = { g: ['m', 1], kg: ['m', 1000], mg: ['m', 0.001], ml: ['v', 1], cl: ['v', 10], dl: ['v', 100], l: ['v', 1000], tl: ['s', 1], tsp: ['s', 1], el: ['s', 3], tbsp: ['s', 3] };
+const unitDim = u => UNIT_DIM[norm(u)] || null;
+const itemKey = (unit, name) => { const d = unitDim(unit); return (d ? 'dim:' + d[0] : norm(unit)) + '|' + cleanName(name); };
+const fmtDec = n => String(Math.round(n * 100) / 100).replace('.', ',');
+function dimText(q, dim) {
+  if (dim === 'm') return q >= 1000 ? [fmtDec(q / 1000), 'kg'] : [fmtQty(q), 'g'];
+  if (dim === 'v') return q >= 1000 ? [fmtDec(q / 1000), 'l'] : [fmtQty(q), 'ml'];
+  return q >= 3 ? [fmtQty(q / 3), 'EL'] : [fmtQty(q), 'TL'];
+}
 function newItem(p, qty, name, sources) {
+  const d = unitDim(p.unit);
   return {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    key: norm(p.unit) + '|' + cleanName(name), qty, unit: p.unit, name, sources, done: false, cat: categorize(p.unit, name)
+    key: itemKey(p.unit, name), qty: d && qty != null ? qty * d[1] : qty, unit: p.unit, dim: d ? d[0] : '',
+    name, sources, done: false, cat: categorize(p.unit, name)
   };
 }
-function addToShop(list, r, servings) {
+function addToShop(list, r, servings, onlyLines = null) {
   const f = servings / (r.servings || 1);
-  for (const line of r.ingredients) {
+  for (const line of onlyLines || r.ingredients) {
     if (isSubHeading(line)) continue;
     const p = parseIngredient(line);
     const qty = p.qty == null ? null : (p.qty2 ?? p.qty) * f;
     const name = p.name || p.raw;
-    const key = norm(p.unit) + '|' + cleanName(name);
+    const key = itemKey(p.unit, name);
     const ex = list.items.find(i => !i.done && i.key === key);
     if (ex) {
-      if (qty != null) ex.qty = (ex.qty || 0) + qty;
+      const d = unitDim(p.unit);
+      if (qty != null) ex.qty = (ex.qty || 0) + (d && ex.dim ? qty * d[1] : qty);
       if (!ex.sources.includes(r.title)) ex.sources.push(r.title);
     } else list.items.push(newItem(p, qty, name, [r.title]));
   }
 }
-const shopText = i => [fmtQty(i.qty), i.unit, i.name].filter(Boolean).join(' ');
+function shopText(i) {
+  if (i.dim && i.qty != null) { const [q, u] = dimText(i.qty, i.dim); return [q, u, i.name].join(' '); }
+  return [fmtQty(i.qty), i.unit, i.name].filter(Boolean).join(' ');
+}
 
 /* Kleiner Auswahl-Dialog: gibt den gewählten Wert zurück (oder null) */
 function choose(title, options) {
@@ -939,11 +990,12 @@ function openCatOrder() {
 }
 
 async function shareList(L) {
-  const open = L.items.filter(i => !i.done);
+  const open = L.items.filter(i => !i.done && !pantryHit(i)), pantry = L.items.filter(pantryHit);
   const parts = orderedCats().map(c => {
     const items = open.filter(i => (i.cat || 'sonstiges') === c.id);
     return items.length ? `\n${c.icon} ${c.label}\n` + items.map(i => '• ' + shopText(i)).join('\n') : '';
   }).filter(Boolean);
+  if (pantry.length) parts.push('\n🧂 Vorrat prüfen\n' + pantry.map(i => '• ' + shopText(i)).join('\n'));
   const text = `🛒 ${L.name}\n` + parts.join('\n');
   try { if (navigator.share) { await navigator.share({ title: L.name, text }); return; } } catch (e) { if (e.name === 'AbortError') return; }
   try { await navigator.clipboard.writeText(text); toast('Liste kopiert 📋'); } catch (e) { prompt('Liste zum Kopieren:', text); }
@@ -952,15 +1004,16 @@ async function shareList(L) {
 function renderShop(app) {
   $('#pageTitle').textContent = 'Einkaufen';
   const L = activeList();
-  const open = L.items.filter(i => !i.done), done = L.items.filter(i => i.done);
+  const pantry = L.items.filter(pantryHit);
+  const open = L.items.filter(i => !i.done && !pantryHit(i)), done = L.items.filter(i => i.done);
   const groups = orderedCats().map(c => ({ c, items: open.filter(i => (i.cat || 'sonstiges') === c.id) })).filter(g => g.items.length);
   const item = i => `<li data-id="${i.id}" class="${i.done ? 'done' : ''}"><span class="box"></span>
       <span class="txt">${esc(shopText(i))}${i.sources.length ? `<span class="src">${esc(i.sources.join(', '))}</span>` : ''}</span>
-      ${i.done ? '' : `<button class="mini" data-cat="${i.id}" aria-label="Abteilung ändern" title="Abteilung ändern">${catById(i.cat).icon}</button>`}
+      ${i.done ? '' : pantryHit(i) ? `<button class="mini" data-buy="${i.id}" aria-label="Doch kaufen" title="Doch kaufen">🛒</button>` : `<button class="mini" data-cat="${i.id}" aria-label="Abteilung ändern" title="Abteilung ändern">${catById(i.cat).icon}</button>`}
       <button class="del" data-del="${i.id}" aria-label="Entfernen">✕</button></li>`;
   app.innerHTML = `
     <div class="chips" style="margin-top:10px">
-      ${state.lists.map(l => { const n = l.items.filter(i => !i.done).length; return `<button class="chip ${l.id === L.id ? 'on' : ''}" data-list="${l.id}">${esc(l.name)}${n ? ' · ' + n : ''}</button>`; }).join('')}
+      ${state.lists.map(l => { const n = l.items.filter(i => !i.done && !pantryHit(i)).length; return `<button class="chip ${l.id === L.id ? 'on' : ''}" data-list="${l.id}">${esc(l.name)}${n ? ' · ' + n : ''}</button>`; }).join('')}
       <button class="chip" data-newlist>＋ Neue Liste</button>
     </div>
     <div class="list-head"><h2>${esc(L.name)}</h2><button class="icon-btn" data-menu aria-label="Listen-Optionen">⋯</button></div>
@@ -972,6 +1025,9 @@ function renderShop(app) {
     <button class="btn block" data-pick>📖 Zutaten aus Rezepten übernehmen</button>
     ${L.items.length ? '' : `<div class="empty"><div class="big">🛒</div><p>Diese Liste ist leer.<br>Öffne ein Rezept und tippe auf „Zutaten auf die Einkaufsliste“ – oder tippe oben einen Artikel ein.</p></div>`}
     ${groups.map(g => `<h3 class="cat-h">${g.c.icon} ${esc(g.c.label)}<span>${g.items.length}</span></h3><ul class="shop-list">${g.items.map(item).join('')}</ul>`).join('')}
+    ${pantry.length ? `<h3 class="cat-h">🧂 Vorrat – prüfen, ob noch genug da ist<span>${pantry.length}</span></h3>
+      <ul class="shop-list pantry">${pantry.map(item).join('')}</ul>
+      <p class="hint" style="margin:6px 4px 0">Abhaken = genug da. Fehlt etwas? Tippe auf 🛒, dann kommt es auf die Einkaufsliste.</p>` : ''}
     ${done.length ? `<h3 class="cat-h muted">✓ Erledigt<span>${done.length}</span></h3><ul class="shop-list">${done.map(item).join('')}</ul>` : ''}
     ${open.length ? `<p class="hint" style="margin-top:14px">Tipp: Steht etwas in der falschen Abteilung? Tippe auf das kleine Symbol rechts daneben. Die App merkt sich das für das nächste Mal.</p>` : ''}
     ${L.items.length ? `<div class="btn-row">
@@ -1003,14 +1059,20 @@ function renderShop(app) {
     const catBtn = t.closest('[data-cat]');
     if (catBtn) {
       const i = L.items.find(x => x.id === catBtn.dataset.cat); if (!i) return;
-      const v = await choose(`Abteilung für „${i.name}“`, orderedCats().map(c => ({ label: `${c.icon} ${c.label}`, value: c.id, on: c.id === i.cat })));
+      const v = await choose(`Abteilung für „${i.name}“`, [
+        ...orderedCats().map(c => ({ label: `${c.icon} ${c.label}`, value: c.id, on: c.id === i.cat })),
+        { label: '🧂 Zum Vorrat hinzufügen (hab ich immer da)', value: '__pantry' }
+      ]);
       if (!v) return;
+      if (v === '__pantry') { await addToPantry(i.name); i.buy = false; await saveShop(); renderShop(app); toast('Zum Vorratsschrank hinzugefügt 🧂'); return; }
       i.cat = v;
       state.settings.catMap = { ...(state.settings.catMap || {}), [cleanName(i.name)]: v };
       await Store.set('settings', state.settings); await saveShop(); renderShop(app);
       toast(`Gemerkt: kommt künftig zu „${catById(v).label}“`);
       return;
     }
+    const buy = t.closest('[data-buy]');
+    if (buy) { const i = L.items.find(x => x.id === buy.dataset.buy); if (i) { i.buy = true; await saveShop(); renderShop(app); toast('Kommt auf die Einkaufsliste 🛒'); } return; }
     const del = t.closest('[data-del]');
     if (del) { L.items = L.items.filter(i => i.id !== del.dataset.del); await saveShop(); renderShop(app); return; }
     const li = t.closest('.shop-list li');
@@ -1060,6 +1122,106 @@ $('#pickOk').addEventListener('click', async () => {
   toast(`Zutaten aus ${ids.length} Rezept${ids.length > 1 ? 'en' : ''} hinzugefügt`);
   if (location.hash === '#/shop') renderShop($('#app'));
 });
+
+/* =========================================================
+   Was koche ich mit …?
+   ========================================================= */
+const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const ADJ = /^(rote?n?|grune?n?|gelbe?n?|weisse?n?|schwarze?n?|frische?n?|gehackte?n?|getrocknete?n?|grosse?n?|kleine?n?|mittelgrosse?n?|weiche?n?|kalte?n?|warme?n?|geriebene?n?|reife?n?|mehlige?n?|festkochende?n?|tiefgekuhlte?n?|junge?n?|feine?n?|grobe?n?|ganze?n?|halbe?n?|bio|evtl\.?|etwas|ca\.?)$/;
+function coreName(line) {
+  const p = parseIngredient(line);
+  const base = (p.name || p.raw).replace(/\(.*?\)/g, ' ').split(/,| oder | und | zum | für | aus der | nach /i)[0].trim();
+  const words = base.split(/\s+/);
+  while (words.length > 1 && ADJ.test(norm(words[0]))) words.shift();
+  return words.join(' ').replace(/^[a-zäöü]/, c => c.toUpperCase());
+}
+const haveStem = t => { t = norm(t).trim(); return t.length > 4 ? t.replace(/(en|n|e|s)$/, '') : t; };
+function lineHas(line, stems) {
+  const l = norm(line);
+  return stems.some(t => t.length < 4 ? new RegExp('(^|[^a-z])' + escRe(t) + '([^a-z]|$)').test(l) : l.includes(t));
+}
+function cookMatches(have, usePantry) {
+  const stems = have.map(haveStem).filter(Boolean);
+  if (!stems.length) return [];
+  return state.recipes.map(r => {
+    const lines = r.ingredients.filter(l => !isSubHeading(l));
+    const matched = lines.filter(l => lineHas(l, stems));
+    const missing = lines.filter(l => !matched.includes(l) && !(usePantry && isPantryName(parseIngredient(l).name || l)));
+    return { r, matched, missing, total: lines.length };
+  }).filter(x => x.matched.length)
+    .sort((a, b) => a.missing.length - b.missing.length || b.matched.length - a.matched.length || a.r.title.localeCompare(b.r.title, 'de'));
+}
+
+function renderCook(app) {
+  $('#pageTitle').textContent = 'Was koche ich mit …?';
+  const have = state.have;
+  const freq = {};
+  state.recipes.forEach(r => r.ingredients.forEach(l => {
+    if (isSubHeading(l)) return;
+    const n = coreName(l);
+    if (n && n.length > 2 && !isPantryName(n)) freq[n] = (freq[n] || 0) + 1;
+  }));
+  const sugg = Object.keys(freq).sort((a, b) => freq[b] - freq[a] || a.localeCompare(b, 'de'))
+    .filter(n => !have.some(h => norm(h) === norm(n))).slice(0, 18);
+  app.innerHTML = `
+    <a class="back-link" href="#/">‹ Alle Rezepte</a>
+    <p class="hint" style="margin-top:0">Gib ein, was du im Kühlschrank oder Vorrat hast. Die App zeigt dir passende Rezepte – zuerst die, bei denen am wenigsten fehlt.</p>
+    <form class="shop-add" id="haveForm">
+      <label class="sr-only" for="haveIn">Zutat</label>
+      <input type="text" id="haveIn" placeholder="z. B. Zucchini, Feta, Reis" autocomplete="off">
+      <button class="btn primary" type="submit" aria-label="Hinzufügen">+</button>
+    </form>
+    ${have.length ? `<div class="chips-wrap">${have.map((h, i) => `<button class="chip on chip-x" data-hrem="${i}">${esc(h)} ✕</button>`).join('')}
+      <button class="chip" data-hclear>Alle entfernen</button></div>` : ''}
+    ${sugg.length ? `<p class="hint" style="margin-bottom:0">Schnell antippen:</p><div class="chips-wrap">${sugg.map(n => `<button class="chip" data-hadd="${esc(n)}">＋ ${esc(n)}</button>`).join('')}</div>` : ''}
+    <label class="pick" style="border:0"><input type="checkbox" id="usePantry" ${state.haveUsePantry ? 'checked' : ''}>
+      <span>Vorratsschrank (${esc(pantryList().slice(0, 4).join(', '))}${pantryList().length > 4 ? ' …' : ''}) zählt als vorhanden</span></label>
+    <div id="cookResults"></div>`;
+  drawCookResults();
+
+  $('#haveForm').onsubmit = async e => {
+    e.preventDefault();
+    const v = $('#haveIn').value.split(',').map(x => x.trim()).filter(Boolean);
+    if (!v.length) return;
+    v.forEach(x => { if (!state.have.some(h => norm(h) === norm(x))) state.have.push(x); });
+    await Store.set('have', state.have); renderCook(app); $('#haveIn').focus();
+  };
+  $('#usePantry').onchange = async e => { state.haveUsePantry = e.target.checked; await Store.set('haveUsePantry', state.haveUsePantry); drawCookResults(); };
+  app.onclick = async e => {
+    if (location.hash !== '#/cook') return;
+    const t = e.target;
+    const add = t.closest('[data-hadd]');
+    if (add) { state.have.push(add.dataset.hadd); await Store.set('have', state.have); renderCook(app); return; }
+    const rem = t.closest('[data-hrem]');
+    if (rem) { state.have.splice(+rem.dataset.hrem, 1); await Store.set('have', state.have); renderCook(app); return; }
+    if (t.closest('[data-hclear]')) { state.have = []; await Store.set('have', state.have); renderCook(app); return; }
+    const miss = t.closest('[data-miss]');
+    if (miss) {
+      const m = cookMatches(state.have, state.haveUsePantry).find(x => x.r.id === miss.dataset.miss);
+      if (!m || !m.missing.length) return;
+      const L = await chooseList('Fehlendes auf welche Liste?'); if (!L) return;
+      addToShop(L, m.r, m.r.servings, m.missing); state.activeList = L.id; await saveShop();
+      toast(`${m.missing.length} fehlende Zutaten auf „${L.name}“ 🛒`);
+    }
+  };
+}
+
+function drawCookResults() {
+  const box = $('#cookResults'); if (!box) return;
+  if (!state.have.length) { box.innerHTML = `<div class="empty"><div class="big">🥕</div><p>Füge oben eine oder mehrere Zutaten hinzu.</p></div>`; return; }
+  const res = cookMatches(state.have, state.haveUsePantry);
+  if (!res.length) { box.innerHTML = `<div class="empty"><div class="big">🤔</div><p>Kein Rezept enthält diese Zutaten. Versuch es mit einer anderen Schreibweise oder weniger Zutaten.</p></div>`; return; }
+  box.innerHTML = `<h3 class="cat-h" style="position:static">${res.length} passende ${res.length === 1 ? 'Rezept' : 'Rezepte'}</h3>` + res.map(({ r, matched, missing }) => `
+    <div class="cook-card">
+      <a class="entry-main" href="#/r/${encodeURIComponent(r.id)}" style="text-decoration:none;color:inherit">
+        <span class="pthumb">${imageHtml(r)}</span>
+        <span class="pinfo"><b>${esc(r.title)}</b>
+          <span class="hint">✓ ${matched.map(coreName).map(esc).join(', ')}</span>
+          ${missing.length ? `<span class="miss">Fehlt (${missing.length}): ${missing.map(coreName).map(esc).join(', ')}</span>` : '<span class="ok">🎉 Alles da!</span>'}
+        </span></a>
+      ${missing.length ? `<button class="btn small" data-miss="${esc(r.id)}">🛒 Fehlendes einkaufen</button>` : ''}
+    </div>`).join('');
+}
 
 /* =========================================================
    Wochenplan
@@ -1649,6 +1811,18 @@ function renderMore(app) {
     </section>
 
     <section class="panel">
+      <h2>🧂 Vorratsschrank</h2>
+      <p class="hint">Diese Zutaten hast du immer zu Hause. Auf der Einkaufsliste landen sie in der Gruppe „Vorrat prüfen“ statt bei den normalen Artikeln. Auch zusammengesetzte Wörter zählen: „Öl“ gilt z. B. auch für Olivenöl, „Brühe“ für Gemüsebrühe.</p>
+      <div class="chips-wrap">${pantryList().map((p, i) => `<button class="chip chip-x" data-prem="${i}" aria-label="${esc(p)} entfernen">${esc(p)} ✕</button>`).join('') || '<span class="hint">Noch leer.</span>'}</div>
+      <form class="shop-add" id="pantryForm" style="margin-bottom:6px">
+        <label class="sr-only" for="pantryIn">Vorrat</label>
+        <input type="text" id="pantryIn" placeholder="z. B. Sojasauce, Brühe" autocomplete="off">
+        <button class="btn primary" type="submit" aria-label="Hinzufügen">+</button>
+      </form>
+      <button class="btn small" id="pantryReset">Standard wiederherstellen</button>
+    </section>
+
+    <section class="panel">
       <h2>Wochenplan</h2>
       <p class="hint">Haushaltsgrösse: ${planCfg().household} · Tage: ${planCfg().days} · Rezepte pro Tag: ${planCfg().perDay} · Beginn: ${planCfg().start === 'today' ? 'heute' : WD[planCfg().start]}</p>
       <button class="btn block" id="planCfgBtn">⚙️ Wochenplan-Einstellungen</button>
@@ -1689,6 +1863,17 @@ function renderMore(app) {
   $('#theme').onclick = e => { const b = e.target.closest('button'); if (!b) return; setTheme(b.dataset.t); mark(b.dataset.t); };
   $('#exp').onclick = exportBackup;
   $('#planCfgBtn').onclick = openPlanSettings;
+  $('#pantryForm').onsubmit = async e => {
+    e.preventDefault();
+    const v = $('#pantryIn').value.split(',').map(x => x.trim()).filter(Boolean);
+    for (const x of v) await addToPantry(x);
+    updateShopBadge(); renderMore(app); toast('Vorrat gespeichert');
+  };
+  $$('[data-prem]', app).forEach(b => b.onclick = async () => {
+    const list = [...pantryList()]; list.splice(+b.dataset.prem, 1);
+    state.settings.pantry = list; await Store.set('settings', state.settings); updateShopBadge(); renderMore(app);
+  });
+  $('#pantryReset').onclick = async () => { state.settings.pantry = [...DEFAULT_PANTRY]; await Store.set('settings', state.settings); updateShopBadge(); renderMore(app); };
   $('#impFile').onchange = e => { const f = e.target.files[0]; if (f) importBackup(f); e.target.value = ''; };
   $('#repo').onchange = async e => { state.settings.repo = e.target.value.trim(); await Store.set('settings', state.settings); toast('Gespeichert'); };
   $('#resetLocal')?.addEventListener('click', async () => {
@@ -1748,11 +1933,18 @@ async function importBackup(file) {
    ========================================================= */
 async function init() {
   updateThemeColor();
-  const [local, lists, oldShop, settings, plan] = await Promise.all([Store.get('local'), Store.get('lists'), Store.get('shop'), Store.get('settings'), Store.get('plan')]);
+  const [local, lists, oldShop, settings, plan, have, haveUsePantry] = await Promise.all([Store.get('local'), Store.get('lists'), Store.get('shop'), Store.get('settings'), Store.get('plan'), Store.get('have'), Store.get('haveUsePantry')]);
+  if (Array.isArray(have)) state.have = have;
+  if (typeof haveUsePantry === 'boolean') state.haveUsePantry = haveUsePantry;
   if (plan && typeof plan === 'object') state.plan = plan;
   if (local && local.recipes) state.local = { recipes: local.recipes, deleted: local.deleted || [] };
   if (settings) state.settings = { ...state.settings, ...settings };
-  if (lists && Array.isArray(lists.lists) && lists.lists.length) { state.lists = lists.lists; state.activeList = lists.active; }
+  if (lists && Array.isArray(lists.lists) && lists.lists.length) {
+    state.lists = lists.lists; state.activeList = lists.active;
+    state.lists.forEach(l => l.items.forEach(i => {
+      if (i.dim === undefined) { const d = unitDim(i.unit); i.dim = d ? d[0] : ''; if (d && i.qty != null) i.qty *= d[1]; i.key = itemKey(i.unit, i.name); }
+    }));
+  }
   else {
     const l = createList('Einkaufsliste');
     if (Array.isArray(oldShop)) l.items = oldShop.map(i => ({ ...i, cat: i.cat || categorize(i.unit, i.name) }));
