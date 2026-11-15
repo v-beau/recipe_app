@@ -452,5 +452,63 @@
     "notes": "",
     "last_cooked": "",
     "added_at": "2026-11-15T14:50:26+00:00"
+  },
+  {
+    "id": "lazy-late-night-butter-chicken-dal-c467a",
+    "title": "Lazy Late-Night Butter Chicken Dal",
+    "source_url": "https://vegan-high-protein.de/blogs/rezepte/lazy-late-night-butter-chicken-dal",
+    "image": "images/lazy-late-night-butter-chicken-dal-c467a.jpg",
+    "servings": 2,
+    "prep_time": 5,
+    "cook_time": 15,
+    "difficulty": "",
+    "rating": 0,
+    "tags": [
+      "Main course",
+      "20 Minuten",
+      "High Protein",
+      "Lazy Cooking",
+      "Linsen",
+      "Meal Prep",
+      "Vegan"
+    ],
+    "ingredients": [
+      "380 g Chicken Alternative",
+      "200 g Red lentils",
+      "400 g Chopped tomatoes",
+      "400 ml Coconut milk (light)",
+      "300 ml water (to add)",
+      "1 tsp Curry paste",
+      "2 tsp Garam Masala",
+      "1 tsp Turmeric",
+      "1 tsp cumin",
+      "1 tsp coriander seed",
+      "1 Piece Anisstern",
+      "2 tbsp Soy sauce",
+      "0.5 Piece Lemon (only the juice)",
+      "1 tbsp Crispy Chili Oil",
+      "1 tbsp Maple syrup",
+      "1 Price Salt (to taste)",
+      "1 Price Pepper (to taste)"
+    ],
+    "steps": [
+      "Sauté Chicken Alternative",
+      "Sauté the chicken alternative, reduce the heat, and stir in the curry paste.",
+      "Roasting spices",
+      "Add the spices and lentils and roast until it is fragrant.",
+      "Let simmer",
+      "Deglaze with chopped tomatoes and coconut milk, cover, and let simmer for about 15 minutes until the lentils are soft (add water if necessary)",
+      "Complete",
+      "Add the remaining ingredients, stir well, and enjoy."
+    ],
+    "nutrition": {
+      "calories": 789,
+      "protein": 66.0,
+      "fat": 32.0,
+      "carbs": 69.0
+    },
+    "notes": "",
+    "last_cooked": "",
+    "added_at": "2026-11-15T14:52:44+00:00"
   }
 ]
