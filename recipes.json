@@ -554,5 +554,64 @@
     "notes": "",
     "last_cooked": "",
     "added_at": "2026-11-15T15:03:44+00:00"
+  },
+  {
+    "id": "vegane-shakshuka-mit-kichererbsen-c2cd9",
+    "title": "Vegane Shakshuka mit Kichererbsen",
+    "source_url": "https://biancazapatka.com/de/shakshuka-mit-kichererbsen/",
+    "image": "images/vegane-shakshuka-mit-kichererbsen-c2cd9.jpg",
+    "servings": 4,
+    "prep_time": 10,
+    "cook_time": 10,
+    "difficulty": "",
+    "rating": 0,
+    "tags": [
+      "Beilage",
+      "Frühstück",
+      "Hauptgericht",
+      "Vorspeise",
+      "Afrika",
+      "Mittlerer Osten",
+      "Kichererbsen",
+      "Schakschuka"
+    ],
+    "ingredients": [
+      "1 EL Olivenöl (oder Rapsöl)",
+      "1 Zwiebel (gewürfelt)",
+      "3 Zehen Knoblauch (gehackt)",
+      "1 rote Paprika (in feine Streifen geschnitten)",
+      "3 EL Tomatenmark",
+      "2 TL Paprikapulver",
+      "1 TL gemahlener Kreuzkümmel",
+      "400 g passierte Tomaten (oder mehr gehackte Tomaten)",
+      "400 g gehackte Tomaten (oder mehr passierte Tomaten)",
+      "1 EL Agavensirup (oder Zucker/Ahornsirup nach Geschmack)",
+      "1 Dose Kichererbsen (240 g abgespült & abgetropft)",
+      "50 g Kalamata-Oliven (entkernt und gehackt)",
+      "Salz & Pfeffer (nach Geschmack)",
+      "1 TL Chilipulver (oder nach Geschmack)",
+      "Vegane Spiegeleier (*siehe Anmerkungen für Alternativen)",
+      "Koriander oder Petersilie",
+      "Sesam",
+      "Naan (oder Pita/Baguette/Brot (*siehe Rezept für Alternativen))"
+    ],
+    "steps": [
+      "*Notiz: Schritt-für-Schritt Bilder sind oben im Beitrag!",
+      "Das Öl in einer Pfanne erhitzen und die Zwiebel 2-3 Minuten glasig anbraten. Dann den Knoblauch dazugegeben und eine Minute unter Rühren mitbraten. Nun die Paprikastreifen dazugeben und ca. 4 Minuten weiterbraten, bis sie etwas gebräunt sind.",
+      "Jetzt Tomatenmark, Paprikapulver, Kreuzkümmel und Pfeffer hinzugeben. Danach die gestückelten und passierten Tomaten sowie Agavensirup einrühren und etwa fünf Minuten abgedeckt köcheln lassen. Anschließend die Kichererbsen und Oliven hinzugeben. Mit Salz und Chili abschmecken und nochmal fünf Minuten abgedeckt ziehen lassen.",
+      "Währenddessen die veganen Spiegeleier gemäß diesem Rezept (oder andere beliebige Beilagen, Dips und Toppings) zubereiten.",
+      "Zum Schluss die veganen Eier auf die Shakshuka setzen. Mit etwas Koriander oder Petersilie garnieren und nach Belieben Sesam darüber streuen.",
+      "Die Shakshuka entweder traditionell mit Weißbrot in Form von Naan, Pfannenbrot, Pita, Baguette oder Brot servieren und dann direkt aus der Pfanne essen. (Alternativ kann das Gericht auch zu Reis, Kartoffeln, Nudeln, Quinoa, Hirse oder andere glutenfreie Getreide-Alternativen in Schalen serviert werden).",
+      "Guten Appetit!"
+    ],
+    "nutrition": {
+      "calories": null,
+      "protein": null,
+      "fat": null,
+      "carbs": null
+    },
+    "notes": "",
+    "last_cooked": "",
+    "added_at": "2026-11-15T15:04:55+00:00"
   }
 ]
