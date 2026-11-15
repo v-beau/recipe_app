@@ -613,5 +613,53 @@
     "notes": "",
     "last_cooked": "",
     "added_at": "2026-11-15T15:04:55+00:00"
+  },
+  {
+    "id": "apfel-zimt-porridge-gesundes-fruhstuck-9edf2",
+    "title": "Apfel-Zimt-Porridge (Gesundes Frühstück)",
+    "source_url": "https://biancazapatka.com/de/apfel-zimt-porridge/",
+    "image": "images/apfel-zimt-porridge-gesundes-fruhstuck-9edf2.jpg",
+    "servings": 2,
+    "prep_time": 5,
+    "cook_time": 5,
+    "difficulty": "",
+    "rating": 0,
+    "tags": [
+      "Dessert",
+      "Frühstück",
+      "Snack",
+      "Deutsch",
+      "Äpfel",
+      "Haferbrei",
+      "Oatmeal",
+      "Porridge"
+    ],
+    "ingredients": [
+      "2 Äpfel",
+      "100 g zarte Haferflocken (oder andere Getreideflocken)",
+      "500 ml Pflanzenmilch (z. B. Mandel-, Hafer-, Soja-, Reis-, Cashew- oder Kokosdrink)",
+      "1,5 TL Zimt",
+      "1 EL Kokosöl (oder anderes Öl oder vegane Butter)",
+      "1 EL Agavendicksaft (oder Ahornsirup, Dattelsirup oder Zucker nach Geschmack)",
+      "2-3 EL Mandeln (gehackt)",
+      "Granatapfelkerne (optional zum Garnieren)"
+    ],
+    "steps": [
+      "*Hinweis: Schau dir das Rezept-Video + die Schritt-für-Schritt Anleitung oben im Beitrag an!",
+      "Einen Apfel reiben und mit den Haferflocken, der Pflanzenmilch und 1 TL Zimt in einem Topf aufkochen. Unter Rühren kurz köcheln lassen, bis es eindickt und cremig wird.",
+      "Anschließend den Herd ausschalten. Einen Deckel auf den Topf setzen und das Oatmeal ca. 3-5 Minuten quellen lassen, bis es die gewünschte Konsistenz erreicht hat. (Wer mag kann noch Agavendicksaft unterrühren).",
+      "In der Zwischenzeit den anderen Apfel in Stücke schneiden. 1 EL Kokosöl in einer Pfanne erhitzen und die Äpfelstücke darin ein paar Minuten anbraten. Dann 0,5 TL Zimt, Agavendicksaft und gehackte Mandeln darüber geben und kurz karamellisieren.",
+      "Anschließend das Porridge mit den Zimt-Äpfeln in eine Schüssel oder ein Glas füllen. Direkt warm oder später kalt genießen und mit Granatapfelkernen oder anderen beliebigen Toppings garnieren.",
+      "Guten Appetit!"
+    ],
+    "nutrition": {
+      "calories": 375,
+      "protein": 15.3,
+      "fat": 12.0,
+      "carbs": 53.3
+    },
+    "notes": "",
+    "last_cooked": "",
+    "added_at": "2026-11-15T15:22:46+00:00"
   }
 ]
