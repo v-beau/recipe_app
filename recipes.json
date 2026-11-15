@@ -406,5 +406,51 @@
     "notes": "",
     "last_cooked": "",
     "added_at": "2026-11-15T14:48:07+00:00"
+  },
+  {
+    "id": "kichererbsen-stew-9a79e",
+    "title": "Kichererbsen-Stew",
+    "source_url": "https://migusto.migros.ch/de/rezepte/kichererbsen-stew/19475521",
+    "image": "images/kichererbsen-stew-9a79e.jpg",
+    "servings": 4,
+    "prep_time": 0,
+    "cook_time": 30,
+    "difficulty": "",
+    "rating": 0,
+    "tags": [
+      "Hauptgericht",
+      "Europa",
+      "Laktosefrei",
+      "Eintöpfe"
+    ],
+    "ingredients": [
+      "2 Knoblauchzehen",
+      "40 g Ingwer",
+      "600 g Süsskartoffeln",
+      "2 EL Kokosöl",
+      "3 dl Gemüsebouillon",
+      "5 dl Kokosmilch",
+      "Salz",
+      "1 EL Kurkuma",
+      "2 Dosen Kichererbsen à 435 g, abgetropft 245 g",
+      "100 g Spinat",
+      "1 Limette",
+      "Cayennepfeffer"
+    ],
+    "steps": [
+      "Knoblauch und Ingwer fein hacken. Süsskartoffeln in Würfel à 2 cm schneiden.",
+      "Öl erhitzen. Knoblauch, Ingwer und Süsskartoffeln beigeben und kurz anbraten. Mit Bouillon ablöschen. Mit Kokosmilch aufgiessen. Mit Salz und Kurkuma würzen. Bei mittlerer Hitze ca. 10 Minuten köcheln lassen.",
+      "Kichererbsen und Spinat beigeben und kurz aufkochen. Die Hälfte der Limette auspressen. Saft beigeben. Stew mit Salz und Cayennepfeffer abschmecken.",
+      "Restliche Limette in Schnitze schneiden und mit dem Kichererbsen-Stew servieren."
+    ],
+    "nutrition": {
+      "calories": 570,
+      "protein": 15.0,
+      "fat": 28.0,
+      "carbs": 59.0
+    },
+    "notes": "",
+    "last_cooked": "",
+    "added_at": "2026-11-15T14:50:26+00:00"
   }
 ]
