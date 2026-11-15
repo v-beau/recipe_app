@@ -246,5 +246,59 @@
     "notes": "",
     "last_cooked": "",
     "added_at": "2026-11-15T14:42:19+00:00"
+  },
+  {
+    "id": "vegane-linsen-bolognese-5c5a2",
+    "title": "Vegane Linsen-Bolognese",
+    "source_url": "https://www.zuckerjagdwurst.com/de/rezepte/vegane-linsen-bolognese",
+    "image": "images/vegane-linsen-bolognese-5c5a2.jpg",
+    "servings": 4,
+    "prep_time": 0,
+    "cook_time": 45,
+    "difficulty": "",
+    "rating": 0,
+    "tags": [
+      "Vegane glutenfreie Rezepte",
+      "Vegane Hauptgerichte",
+      "Vegane Pasta-Rezepte",
+      "Vegane Rezepte mit Linsen"
+    ],
+    "ingredients": [
+      "Für die Bolognese:",
+      "2 Zwiebeln",
+      "4 Knoblauchzehen",
+      "2 Karotten",
+      "2 kleine Stangen Sellerie",
+      "250 g Pilze",
+      "2 EL Tomatenmark",
+      "500 g passierte Tomaten",
+      "500 g gestückelte Tomaten",
+      "500 ml Gemüsebrühe",
+      "250 g Rote Linsen",
+      "4 TL italienische Kräuter",
+      "2 TL Ahornsirup",
+      "20 g dunkle Schokolade, 100 % Kakaoanteil",
+      "2 EL Olivenöl zum Braten",
+      "Salz",
+      "Pfeffer",
+      "Außerdem:",
+      "500 g (glutenfreie) Spaghetti",
+      "100 g veganer Parmesan oder Hefeflocken",
+      "frische Kräuter"
+    ],
+    "steps": [
+      "Für die Bolognese Zwiebel und Knoblauch schälen und fein hacken, Karotten, Sellerie und Pilze in kleine Würfel schneiden.",
+      "Olivenöl in einem mittleren Topf erhitzen, Zwiebel- und Knoblauchwürfel dazugeben und anbraten, bis sie glasig sind. Tomatenmark unterrühren und nochmals für einige Sekunden braten lassen. Karotten-, Sellerie- und Pilzwürfel zugeben und unter Rühren 10 Minuten lang anschwitzen. Mit passierten und gestückelten Tomaten sowie Gemüsebrühe aufgießen. Zum Schluss rote Linsen, italienische Kräuter, Ahornsirup, Schokolade, Salz und Pfeffer dazugeben und die Bolognese nochmal abgedeckt für 30 Minuten köcheln lassen, bis die Linsen gar sind.",
+      "Spaghetti nach Packungsanleitung zubereiten und beim Abgießen 100 Milliliter vom Nudelwasser auffangen. Dieses dann in die Bolognese rühren und die fertigen Spaghetti zusammen mit der Soße servieren. Mit veganem Parmesan oder Hefeflocken und frischen Kräutern garnieren."
+    ],
+    "nutrition": {
+      "calories": null,
+      "protein": null,
+      "fat": null,
+      "carbs": null
+    },
+    "notes": "",
+    "last_cooked": "",
+    "added_at": "2026-11-15T14:46:02+00:00"
   }
 ]
