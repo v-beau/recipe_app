@@ -257,6 +257,7 @@ def scrape(url: str) -> dict:
         "protein": nut("proteinContent", "protein"),
         "fat": nut("fatContent", "fat"),
         "carbs": nut("carbohydrateContent", "carbohydrates", "carbs"),
+        "fiber": nut("fiberContent", "fiber"),
     }
 
     image_url = safe(s.image)
