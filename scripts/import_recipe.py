@@ -9,6 +9,9 @@ Zum Ausprobieren auf dem eigenen Computer:
     pip install -r scripts/requirements.txt
     python scripts/import_recipe.py https://www.beispiel.de/mein-rezept
 
+Mehrere Links auf einmal: einen in den Titel, weitere in die Beschreibung
+(einen pro Zeile). Höchstens 20 Links pro Issue.
+
 Optional im Issue-Text (jeweils eine Zeile):
     Tags: Pasta, schnell
     Notiz: Mit weniger Salz kochen
@@ -275,6 +278,7 @@ def scrape(url: str) -> dict:
         "image_url": image_url,
         "tags": tags,
         "canonical": safe(s.canonical_url),
+        "lang": str(safe(lambda: s.language(), "") or "")[:2].lower(),
     }
 
 
@@ -319,39 +323,44 @@ def app_url() -> str:
     return f"https://{owner.lower()}.github.io/{name}/"
 
 
-def run(title: str, body: str) -> tuple[str, str, str]:
-    """Gibt (status, nachricht, rezepttitel) zurück. status: success | duplicate | error"""
-    url = find_url(title, body)
-    if not url:
-        return ("error",
-                "❌ **Kein Link gefunden.**\n\nBitte schreibe den vollständigen Link zur Rezeptseite "
-                "(beginnend mit `https://`) in den **Titel** des Issues.", "")
+MAX_LINKS = 20
 
-    recipes = load_recipes()
+
+def find_urls(*texts: str) -> list[str]:
+    """Alle Links aus Titel und Text, ohne Doppelte (in der Reihenfolge des Auftretens)."""
+    urls, seen = [], set()
+    for text in texts:
+        for m in re.finditer(r"https?://[^\s<>\"')\]]+", text or ""):
+            url = m.group(0).rstrip(".,;")
+            key = normalize_url(url)
+            if key not in seen:
+                seen.add(key)
+                urls.append(url)
+    return urls
+
+
+def import_one(url: str, recipes: list[dict], extra_tags: list[str], notes: str) -> tuple[str, str, str, str]:
+    """Importiert einen Link in die (noch nicht gespeicherte) Liste.
+    Gibt (status, nachricht, rezepttitel, rezept_id) zurück. status: success | duplicate | error"""
     known = {normalize_url(r.get("source_url", "")): r for r in recipes if str(r.get("source_url", "")).startswith("http")}
     dup = known.get(normalize_url(url))
     if dup:
-        return ("duplicate",
-                f"ℹ️ **Dieses Rezept ist schon vorhanden:** „{dup.get('title')}“\n\n"
-                "Es wurde nichts geändert.", dup.get("title", ""))
+        return ("duplicate", f"ℹ️ **Schon vorhanden:** „{dup.get('title')}“ – nichts geändert.", dup.get("title", ""), "")
 
     try:
         data = scrape(url)
     except ImportFehler as e:
-        msg = f"❌ **Import fehlgeschlagen.**\n\n{e}\n\n"
+        msg = f"❌ **Import fehlgeschlagen.** {e}"
         if e.blocked:
-            msg += "Das liegt nicht an dir – die Seite lässt den automatischen Import leider nicht zu.\n\n"
-        return ("error", msg + MANUAL_HINT, "")
+            msg += " Das liegt nicht an dir – die Seite lässt den automatischen Import leider nicht zu."
+        return ("error", msg, "", "")
 
     # Duplikat auch über die "offizielle" Adresse der Seite prüfen
     if data.get("canonical"):
         dup = known.get(normalize_url(str(data["canonical"])))
         if dup:
-            return ("duplicate",
-                    f"ℹ️ **Dieses Rezept ist schon vorhanden:** „{dup.get('title')}“\n\nEs wurde nichts geändert.",
-                    dup.get("title", ""))
+            return ("duplicate", f"ℹ️ **Schon vorhanden:** „{dup.get('title')}“ – nichts geändert.", dup.get("title", ""), "")
 
-    extra_tags, notes = read_issue_extras(body)
     base_id = slugify(data["title"])
     recipe_id = f"{base_id}-{hashlib.sha1(normalize_url(url).encode()).hexdigest()[:5]}"
     existing_ids = {r.get("id") for r in recipes}
@@ -359,7 +368,6 @@ def run(title: str, body: str) -> tuple[str, str, str]:
         recipe_id += "x"
 
     image = download_image(data["image_url"], recipe_id)
-
     recipe = {
         "id": recipe_id,
         "title": data["title"],
@@ -377,26 +385,69 @@ def run(title: str, body: str) -> tuple[str, str, str]:
         "notes": notes,
         "last_cooked": "",
         "added_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        "lang": data["lang"] if data.get("lang") in ("de", "en") else "",
     }
     recipes.append(recipe)
-    save_recipes(recipes)
 
     n = recipe["nutrition"]
-    lines = [
-        f"✅ **Rezept importiert:** {recipe['title']}",
-        "",
-        f"- 🥕 Zutaten: {len(recipe['ingredients'])}",
-        f"- 📝 Schritte: {len(recipe['steps'])}",
-        f"- ⏱ Zeit: {recipe['prep_time'] + recipe['cook_time'] or '–'} Min.",
-        f"- 🔥 Nährwerte: {'ja' if any(v for v in n.values()) else 'nicht angegeben'}",
-        f"- 🖼 Bild: {'ja' if image else 'nein'}",
-    ]
+    details = (
+        f"🥕 {len(recipe['ingredients'])} Zutaten · 📝 {len(recipe['steps'])} Schritte · "
+        f"⏱ {recipe['prep_time'] + recipe['cook_time'] or '–'} Min. · "
+        f"🔥 Nährwerte: {'ja' if any(v for v in n.values()) else 'nein'} · 🖼 Bild: {'ja' if image else 'nein'}"
+    )
+    msg = f"✅ **Importiert:** {recipe['title']}\n{details}"
     if not recipe["steps"]:
-        lines.append("\n⚠️ Es wurden keine Zubereitungsschritte gefunden – du kannst sie in der App ergänzen.")
+        msg += "\n⚠️ Keine Zubereitungsschritte gefunden – du kannst sie in der App ergänzen."
+    return ("success", msg, recipe["title"], recipe_id)
+
+
+def run(title: str, body: str) -> tuple[str, str, str]:
+    """Gibt (status, nachricht, commit-titel) zurück. status: success (mind. ein Rezept neu) | duplicate | error"""
+    urls = find_urls(title, body)
+    if not urls:
+        return ("error",
+                "❌ **Kein Link gefunden.**\n\nBitte schreibe den vollständigen Link zur Rezeptseite "
+                "(beginnend mit `https://`) in den **Titel** des Issues. Mehrere Links kannst du in die "
+                "Beschreibung schreiben – einen pro Zeile.", "")
+    skipped = urls[MAX_LINKS:]
+    urls = urls[:MAX_LINKS]
+
+    recipes = load_recipes()
+    extra_tags, notes = read_issue_extras(body)
+    results = [(url, *import_one(url, recipes, extra_tags, notes)) for url in urls]
+    imported = [r for r in results if r[1] == "success"]
+    if imported:
+        save_recipes(recipes)
+
     link = app_url()
-    if link:
-        lines.append(f"\nIn 1–2 Minuten ist es in deiner App: {link}#/r/{recipe_id}")
-    return ("success", "\n".join(lines), recipe["title"])
+    if len(urls) == 1:
+        url, status, msg, rtitle, rid = results[0]
+        if status == "error":
+            msg += "\n\n" + MANUAL_HINT
+        elif status == "success" and link:
+            msg += f"\n\nIn 1–2 Minuten ist es in deiner App: {link}#/r/{rid}"
+        return (status, msg, rtitle)
+
+    counts = {s: sum(1 for r in results if r[1] == s) for s in ("success", "duplicate", "error")}
+    lines = [
+        f"📚 **{len(urls)} Links verarbeitet:** ✅ {counts['success']} importiert · "
+        f"ℹ️ {counts['duplicate']} schon vorhanden · ❌ {counts['error']} fehlgeschlagen",
+        "",
+    ]
+    for i, (url, status, msg, rtitle, rid) in enumerate(results, 1):
+        lines.append(f"**{i}.** {url}\n{msg}\n")
+    if skipped:
+        lines.append(f"⚠️ Es werden höchstens {MAX_LINKS} Links pro Issue verarbeitet. "
+                     f"Diese {len(skipped)} Links wurden übersprungen – bitte in einem neuen Issue senden:\n"
+                     + "\n".join(f"- {u}" for u in skipped))
+    if counts["error"]:
+        lines.append("\n" + MANUAL_HINT)
+    if imported and link:
+        lines.append(f"\nIn 1–2 Minuten sind die neuen Rezepte in deiner App: {link}")
+    if imported:
+        commit_title = imported[0][3] if len(imported) == 1 else f"{len(imported)} Rezepte"
+        return ("success", "\n".join(lines), commit_title)
+    return ("duplicate" if counts["duplicate"] and not counts["error"] else "error", "\n".join(lines), "")
 
 
 def main() -> int:
