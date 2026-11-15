@@ -661,5 +661,55 @@
     "notes": "",
     "last_cooked": "",
     "added_at": "2026-11-15T15:22:46+00:00"
+  },
+  {
+    "id": "veganes-menemen-turkisches-ruhrei-mit-to-54f42",
+    "title": "Veganes Menemen (Türkisches Rührei mit Tomaten)",
+    "source_url": "https://www.zuckerjagdwurst.com/de/rezepte/veganes-menemen-tuerkisches-ruehrei-mit-tomaten",
+    "image": "images/veganes-menemen-turkisches-ruhrei-mit-to-54f42.jpg",
+    "servings": 4,
+    "prep_time": 0,
+    "cook_time": 30,
+    "difficulty": "",
+    "rating": 0,
+    "tags": [
+      "Vegane Brunch-Rezepte",
+      "Vegane Frühstücksrezepte",
+      "Vegane glutenfreie Rezepte",
+      "Vegane Rezepte mit Tofu"
+    ],
+    "ingredients": [
+      "1 große Zwiebel",
+      "2 Knoblauchzehen",
+      "5 türkische grüne Spitzpaprika",
+      "2 EL Tomatenmark",
+      "2 Dosen (800 g) ganze Tomaten oder 8 frische Tomaten (je nach Saison)",
+      "2 TL edelsüßes Paprikapulver",
+      "1 TL Chilipulver (optional, falls die Paprikas nicht scharf sind)",
+      "1 TL Agavendicksaft",
+      "200 g weicher Naturtofu (z. B. aus dem Asiamarkt)",
+      "Kala Namak (optional)",
+      "Petersilie",
+      "Fladenbrot",
+      "Olivenöl zum Braten",
+      "vegane Butter zum Braten",
+      "Salz",
+      "Pfeffer"
+    ],
+    "steps": [
+      "Die Zwiebel und den Knoblauch klein und die Paprika in mundgerechte Stücke schneiden.",
+      "In ordentlich Olivenöl und veganer Butter zuerst die Zwiebel- und die Paprikastückchen anbraten, bis beides gebräunt ist. Dann den Knoblauch dazugeben und alles zusammen bei mittlerer Hitze 5–10 Minuten weiterbraten. Schon jetzt mit etwas Salz und Pfeffer würzen.",
+      "Das Tomatenmark dazugeben und circa 3 Minuten mit anbraten. Dazu kommen die Dosentomaten und alles wird mit Paprikapulver, Chilipulver (optional) und etwas Agavendicksaft gewürzt und abgeschmeckt. Abgedeckt erneut 5–10 Minuten einkochen lassen und währenddessen die Tomaten etwas kleindrücken.",
+      "Zum Schluss den Tofu in Stücke zupfen und verteilen, leicht verrühren und mit einer Prise Kala Namak würzen. Serviert wird alles mit gehackter Petersilie und Fladenbrot."
+    ],
+    "nutrition": {
+      "calories": null,
+      "protein": null,
+      "fat": null,
+      "carbs": null
+    },
+    "notes": "",
+    "last_cooked": "",
+    "added_at": "2026-11-15T15:23:34+00:00"
   }
 ]
