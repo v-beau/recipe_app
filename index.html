@@ -694,7 +694,7 @@ function route() {
   if (state.wakeLock) { state.wakeLock.release().catch(() => {}); state.wakeLock = null; }
   const parts = (location.hash.slice(1) || '/').split('/').filter(Boolean);
   const view = parts[0] || 'list', id = parts[1] ? decodeURIComponent(parts[1]) : '';
-  const navKey = { list: 'list', r: 'list', cook: 'list', stats: 'list', print: 'list', plan: 'plan', shop: 'shop', new: 'new', edit: 'new', more: 'more' }[view] || 'list';
+  const navKey = { list: 'list', r: 'list', cook: 'list', stats: 'more', print: 'list', plan: 'plan', shop: 'shop', new: 'new', edit: 'new', more: 'more' }[view] || 'list';
   $$('nav.bottom a').forEach(a => a.classList.toggle('active', a.dataset.nav === navKey));
   const app = $('#app');
   if (view === 'r') renderDetail(app, id);
@@ -744,10 +744,7 @@ function renderList(app) {
       <button class="chip ${f.tags.size ? '' : 'on'}" data-tag="">Alle</button>
       ${tags.map(t => `<button class="chip ${f.tags.has(t) ? 'on' : ''}" data-tag="${esc(t)}">${esc(t)}</button>`).join('')}
     </div>` : ''}
-    <div class="btn-row" style="margin:2px 0 12px">
-      <a class="btn" href="#/cook">🥕 Was koche ich mit …?${state.have.length ? ` <span class="hint">(${state.have.length})</span>` : ''}</a>
-      <a class="btn" href="#/stats">📊 Statistik</a>
-    </div>
+    <a class="btn block" href="#/cook" style="margin:2px 0 12px">🥕 Was koche ich mit …?${state.have.length ? ` <span class="hint">(${state.have.length} Zutaten)</span>` : ''}</a>
     <div id="results"></div>`;
   $('#sort').value = f.sort;
   $('#q').addEventListener('input', e => { f.q = e.target.value; renderResults(); });
@@ -1404,7 +1401,7 @@ function renderStats(app) {
       ${i != null ? `<span class="rank">${i}</span>` : ''}<span class="pthumb sm">${imageHtml(r)}</span>
       <span class="pinfo"><b>${esc(r.title)}</b>${extra}</span><span class="cnt">${right}</span></a>`;
   app.innerHTML = `
-    <a class="back-link" href="#/">‹ Alle Rezepte</a>
+    <a class="back-link" href="#/more">‹ Mehr</a>
     <div class="tiles">
       <div class="tile"><b>${events.filter(x => x.d.startsWith(month)).length}×</b><span>diesen Monat gekocht</span></div>
       <div class="tile"><b>${events.filter(x => x.d.startsWith(year)).length}×</b><span>gekocht in ${year}</span></div>
